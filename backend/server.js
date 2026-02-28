@@ -5,7 +5,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Pool } = require("pg");
 
+
 const app = express();
+const ALLOWED_DEAL_STATUSES = ["qualification","proposition","negociation","gagne","perdu"];
 
 // ✅ IMPORTANT : parser le JSON AVANT les routes
 app.use(express.json());
@@ -341,40 +343,59 @@ app.put("/companies/:id", requireAuth, async (req, res) => {
     return res.status(500).json({ error: e.message });
   }
 });
+const ALLOWED_LEAD_STATUSES = [
+  "nouveau", "en_cours", "converti", "perdu",
+];
 // ---------- Leads ----------
 app.get("/leads", requireAuth, async (req, res) => {
   try {
     const r = await pool.query(`
       SELECT l.*,
-             c.first_name, c.last_name, c.email AS contact_email,
+             c.first_name,
+             c.last_name,
+             c.email AS contact_email,
+             co.name AS company_name,
              u.email AS assigned_email
       FROM leads l
       LEFT JOIN contacts c ON c.id = l.contact_id
+      LEFT JOIN companies co ON co.id = c.company_id
       LEFT JOIN users u ON u.id = l.assigned_to
       ORDER BY l.created_at DESC
     `);
+
     res.json(r.rows);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
-
 app.post("/leads", requireAuth, async (req, res) => {
   try {
     const { title, status, source, value_eur, contact_id, assigned_to } = req.body;
+
+    if (!title?.trim()) {
+      return res.status(400).json({ error: "Titre requis" });
+    }
+
+    const finalStatus = status || "nouveau";
+
+    if (!ALLOWED_LEAD_STATUSES.includes(finalStatus)) {
+      return res.status(400).json({ error: "Statut invalide" });
+    }
+
     const r = await pool.query(
       `INSERT INTO leads (title, status, source, value_eur, contact_id, assigned_to)
        VALUES ($1,$2,$3,$4,$5,$6)
        RETURNING *`,
       [
-        title,
-        status || "nouveau",
-        source || null,
+        title.trim(),
+        finalStatus,
+        source?.trim() || null,
         value_eur ?? null,
         contact_id || null,
         assigned_to || null,
       ]
     );
+
     res.status(201).json(r.rows[0]);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -385,10 +406,20 @@ app.post("/leads", requireAuth, async (req, res) => {
 app.patch("/leads/:id/status", requireAuth, async (req, res) => {
   try {
     const { status } = req.body;
+
+    if (!ALLOWED_LEAD_STATUSES.includes(status)) {
+      return res.status(400).json({ error: "Statut invalide" });
+    }
+
     const r = await pool.query(
       `UPDATE leads SET status=$1 WHERE id=$2 RETURNING *`,
       [status, req.params.id]
     );
+
+    if (r.rowCount === 0) {
+      return res.status(404).json({ error: "Lead introuvable" });
+    }
+
     res.json(r.rows[0]);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -476,6 +507,9 @@ app.get("/dashboard/pipeline", requireAuth, async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+// server.js
+const dealsRouter = require("./deals")(pool, requireAuth);
+app.use("/deals", dealsRouter);
 
 // ---------- Start ----------
 const PORT = process.env.PORT || 3000;
@@ -485,3 +519,4 @@ app.listen(PORT, () => {
   console.log("✅ DATABASE_URL exists =", !!process.env.DATABASE_URL);
   console.log("✅ DB host =", safeDbHost(DATABASE_URL));
 });
+
