@@ -6,13 +6,32 @@ const jwt = require("jsonwebtoken");
 const { Pool } = require("pg");
 
 const app = express();
-app.use(cors());
+
+// ✅ IMPORTANT : parser le JSON AVANT les routes
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  cors({
+    origin: ["http://localhost:3001", "http://127.0.0.1:3001"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+app.options("*", cors());
+
+app.use((req, res, next) => {
+  console.log("➡️", req.method, req.originalUrl);
+  next();
+});
 
 // ---------- Env checks ----------
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
-  console.error("❌ DATABASE_URL is missing. Create backend/.env with DATABASE_URL=... (Neon connection string).");
+  console.error(
+    "❌ DATABASE_URL is missing. Create backend/.env with DATABASE_URL=... (Neon connection string)."
+  );
   process.exit(1);
 }
 
@@ -23,7 +42,6 @@ const pool = new Pool({
   connectionString: DATABASE_URL,
   ssl: { rejectUnauthorized: false }, // Neon SSL
 });
-
 // Optional: log where DB points to (without exposing password)
 function safeDbHost(url) {
   try {
@@ -125,14 +143,42 @@ function requireAuth(req, res, next) {
 }
 
 // ---------- Contacts ----------
+// ---------- Contacts ----------
 app.get("/contacts", requireAuth, async (req, res) => {
   try {
-    const r = await pool.query(`
+    const q = (req.query.q || "").toString().trim();
+    const companyId = (req.query.companyId || "").toString().trim();
+
+    const where = [];
+    const params = [];
+    let i = 1;
+
+    if (q) {
+      params.push(`%${q.toLowerCase()}%`);
+      where.push(`
+        (LOWER(c.first_name) LIKE $${i}
+         OR LOWER(c.last_name) LIKE $${i}
+         OR LOWER(c.email) LIKE $${i}
+         OR COALESCE(c.phone,'') LIKE $${i})
+      `);
+      i++;
+    }
+
+    if (companyId) {
+      params.push(companyId);
+      where.push(`c.company_id = $${i}`);
+      i++;
+    }
+
+    const sql = `
       SELECT c.*, co.name AS company_name
       FROM contacts c
       LEFT JOIN companies co ON co.id = c.company_id
+      ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
       ORDER BY c.created_at DESC
-    `);
+    `;
+
+    const r = await pool.query(sql, params);
     res.json(r.rows);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -142,27 +188,92 @@ app.get("/contacts", requireAuth, async (req, res) => {
 app.post("/contacts", requireAuth, async (req, res) => {
   try {
     const { first_name, last_name, email, phone, history, company_id } = req.body;
+
+    if (!first_name?.trim() || !last_name?.trim() || !email?.trim()) {
+      return res.status(400).json({ error: "first_name, last_name, email requis" });
+    }
+
     const r = await pool.query(
       `INSERT INTO contacts (first_name, last_name, email, phone, history, company_id)
        VALUES ($1,$2,$3,$4,$5,$6)
        RETURNING *`,
-      [first_name, last_name, email, phone, history, company_id || null]
+      [
+        first_name.trim(),
+        last_name.trim(),
+        email.trim(),
+        phone?.trim() || null,
+        history?.trim() || null,
+        company_id || null,
+      ]
     );
     res.status(201).json(r.rows[0]);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
+// PUT /contacts/:id -> modifier un contact
+app.put("/contacts/:id", requireAuth, async (req, res) => {
+  try {
+    const id = req.params.id; // ✅ on garde en string
 
+    console.log("PUT /contacts/:id -> id =", id);
+
+    const { first_name, last_name, email, phone, history, company_id } = req.body || {};
+
+    if (!id) return res.status(400).json({ error: "ID invalide" });
+    if (!first_name?.trim() || !last_name?.trim() || !email?.trim()) {
+      return res.status(400).json({ error: "first_name, last_name, email requis" });
+    }
+
+    const r = await pool.query(
+      `UPDATE contacts
+       SET first_name=$1,
+           last_name=$2,
+           email=$3,
+           phone=$4,
+           history=$5,
+           company_id=$6
+       WHERE id=$7
+       RETURNING *`,
+      [
+        first_name.trim(),
+        last_name.trim(),
+        email.trim(),
+        phone?.trim() || null,
+        history?.trim() || null,
+        company_id || null,
+        id,
+      ]
+    );
+
+    if (r.rowCount === 0) return res.status(404).json({ error: "Contact introuvable" });
+    res.json(r.rows[0]);
+  } catch (e) {
+    // Si id doit être int et tu envoies "undefined", Postgres peut renvoyer une erreur de cast
+    if (String(e.message || "").includes("invalid input syntax")) {
+      return res.status(400).json({ error: "ID invalide" });
+    }
+    res.status(500).json({ error: e.message });
+  }
+});
 app.delete("/contacts/:id", requireAuth, async (req, res) => {
   try {
-    await pool.query(`DELETE FROM contacts WHERE id=$1`, [req.params.id]);
+    const id = req.params.id; // UUID string
+
+    const result = await pool.query(
+      `DELETE FROM contacts WHERE id=$1 RETURNING *`,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Contact introuvable" });
+    }
+
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
-
 // ---------- Companies ----------
 app.get("/companies", requireAuth, async (req, res) => {
   try {
@@ -196,7 +307,40 @@ app.delete("/companies/:id", requireAuth, async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+// PUT /companies/:id  -> modifier une entreprise
+app.put("/companies/:id", requireAuth, async (req, res) => {
+  try {
+    const id = req.params.id; // ✅ UUID string
+    const { name, website, city, sector } = req.body || {};
 
+    if (!id) return res.status(400).json({ error: "ID invalide" });
+    if (!name || !String(name).trim()) return res.status(400).json({ error: "Le nom est obligatoire" });
+
+    const result = await pool.query(
+      `UPDATE companies
+       SET name=$1, website=$2, city=$3, sector=$4
+       WHERE id=$5
+       RETURNING id, name, website, city, sector, created_at`,
+      [
+        String(name).trim(),
+        website?.trim() ? website.trim() : null,
+        city?.trim() ? city.trim() : null,
+        sector?.trim() ? sector.trim() : null,
+        id,
+      ]
+    );
+
+    if (result.rowCount === 0) return res.status(404).json({ error: "Entreprise introuvable" });
+
+    return res.json(result.rows[0]);
+  } catch (e) {
+    // Si jamais Postgres se plaint d'un cast
+    if (String(e.message || "").includes("invalid input syntax")) {
+      return res.status(400).json({ error: "ID invalide" });
+    }
+    return res.status(500).json({ error: e.message });
+  }
+});
 // ---------- Leads ----------
 app.get("/leads", requireAuth, async (req, res) => {
   try {

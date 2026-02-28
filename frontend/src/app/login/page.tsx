@@ -73,13 +73,7 @@ export default function LoginPage() {
           >
             {loading ? "Connexion..." : "Se connecter"}
           </button>
-          <button
-  type="button"
-  className="w-full border p-2 rounded-lg"
-  onClick={() => router.push("/signup")}
->
-  Créer un compte
-</button>
+          
         </form>
       </div>
     </main>
