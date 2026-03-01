@@ -10,7 +10,7 @@ const ALLOWED_STATUSES = [
   "perdu",
 ];
 
-module.exports = function (pool, requireAuth) {
+module.exports = function (pool, requireAuth, sendDealWonEmail) {
   const router = express.Router();
 
   // ---------- GET /deals ----------
@@ -76,7 +76,7 @@ module.exports = function (pool, requireAuth) {
 
       const byStatus = await pool.query(`
         SELECT status,
-               COUNT(*)::int AS count,
+               COUNT(*)::int       AS count,
                COALESCE(SUM(amount),0)::numeric AS total
         FROM deals
         GROUP BY status
@@ -138,7 +138,7 @@ module.exports = function (pool, requireAuth) {
       const r = await pool.query(`
         INSERT INTO deals 
           (title, description, status, amount, contact_id, company_id, assigned_to, expected_close_date)
-        VALUES ($1, $2, $3::deal_status, $4, $5, $6, $7, $8)
+        VALUES ($1,$2,$3::deal_status,$4,$5,$6,$7,$8)
         RETURNING *
       `, [
         title.trim(),
@@ -229,7 +229,30 @@ module.exports = function (pool, requireAuth) {
       `, [status, req.params.id]);
 
       if (r.rowCount === 0) return res.status(404).json({ error: "Deal introuvable" });
+
       res.json(r.rows[0]);
+
+      // ✅ Email deal gagné au commercial assigné
+      if (status === "gagne" && sendDealWonEmail) {
+        try {
+          const u = await pool.query(`
+            SELECT u.email, u.first_name FROM users u
+            JOIN deals d ON d.assigned_to = u.id
+            WHERE d.id = $1
+          `, [req.params.id]);
+          if (u.rows[0]) {
+            sendDealWonEmail({
+              email: u.rows[0].email,
+              first_name: u.rows[0].first_name,
+              deal_title: r.rows[0].title,
+              amount: r.rows[0].amount,
+            });
+          }
+        } catch (emailErr) {
+          console.error("Erreur email deal gagné:", emailErr.message);
+        }
+      }
+
     } catch (e) {
       res.status(500).json({ error: e.message });
     }
