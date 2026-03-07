@@ -134,7 +134,8 @@ jobs:
 
       - name: Generate PNG from Mermaid
         run: |
-          mmdc -i /tmp/diagram.mmd -o doc/diagram_model.png -t neutral -b white --width 1200 --puppeteer-args="--no-sandbox"
+          echo '{"args":["--no-sandbox","--disable-setuid-sandbox"]}' > /tmp/puppeteer-config.json
+          mmdc -i /tmp/diagram.mmd -o doc/diagram_model.png -t neutral -b white --width 1200 -p /tmp/puppeteer-config.json
 
       - name: Commit and push diagram
         run: |
