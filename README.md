@@ -399,11 +399,10 @@ FormaPro est une agence spécialisée dans la formation en **Marketing Digital**
 
 ### Schéma des entités et relations
 
-```
 >  Généré automatiquement à chaque push via GitHub Actions
 
 ![Diagramme de classes](doc/diagram_model.png)
-```
+
 ### Détail des tables principales
 
 #### Table `users`
