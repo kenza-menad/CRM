@@ -269,20 +269,19 @@ FormaPro est une agence spécialisée dans la formation en **Marketing Digital**
 
 | ID | Besoin | Priorité |
 |----|--------|----------|
-| BF01 | Authentification sécurisée (login, inscription, reset password) | Haute |
-| BF02 | Gestion CRUD des contacts avec fiches détaillées | Haute |
-| BF03 | Gestion CRUD des entreprises partenaires | Haute |
-| BF04 | Suivi des leads avec statuts et sources | Haute |
-| BF05 | Pipeline de ventes visuel (Kanban + Liste) | Haute |
-| BF06 | Gestion des tâches avec calendrier et priorités | Haute |
-| BF07 | Envoi d'emails automatiques via Brevo (9 types) | Haute |
-| BF08 | Envoi d'emails manuels depuis les fiches contact | Haute |
-| BF09 | Templates d'emails personnalisables avec variables | Moyenne |
-| BF10 | Tableau de bord analytique avec KPI et graphiques | Haute |
-| BF11 | Historique complet des communications | Moyenne |
-| BF12 | Gestion des rôles et utilisateurs | Haute |
-| BF13 | Filtres par période sur le dashboard | Moyenne |
-| BF14 | Export CSV des entreprises | Basse |
+| BF01 | Authentification sécurisée (login, inscription, reset password) |
+| BF02 | Gestion CRUD des contacts avec fiches détaillées |
+| BF03 | Gestion CRUD des entreprises partenaires | 
+| BF04 | Suivi des leads avec statuts et sources | 
+| BF05 | Pipeline de ventes visuel (Kanban + Liste) | 
+| BF06 | Gestion des tâches avec calendrier et priorités |
+| BF07 | Envoi d'emails automatiques via Brevo |
+| BF08 | Envoi d'emails manuels depuis les fiches contact | 
+| BF09 | Templates d'emails personnalisables avec variables | 
+| BF10 | Tableau de bord analytique avec KPI et graphiques |
+| BF11 | Historique complet des communications | 
+| BF12 | Gestion des rôles et utilisateurs |
+| BF13 | Filtres par période sur le dashboard | 
 
 ### 1.3 Besoins non fonctionnels
 
