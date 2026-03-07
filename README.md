@@ -743,12 +743,10 @@ async function sendEmail({ to, subject, htmlContent, type, contactId, userId }) 
 
 ```bash
 # 1. Cloner le dépôt
-git clone https://github.com/votre-username/formaprocrm.git
-cd formaprocrm
+git clone https://github.com/kenza-menad/CRM.git
 
 # 2. Configurer les variables d'environnement
 cp .env.example .env
-# Éditer .env avec vos valeurs
 
 # 3. Lancer l'application avec Docker
 docker compose up -d
