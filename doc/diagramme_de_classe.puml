@@ -1,0 +1,157 @@
+@startuml CRM
+
+skinparam shadowing false
+skinparam classBackgroundColor #FAFAFA
+skinparam classBorderColor #AAAAAA
+skinparam arrowColor #555555
+skinparam classHeaderBackgroundColor #E8F5E9
+skinparam classFontStyle bold
+
+package com.formaero.crm {
+
+    package com.formaero.crm.auth {
+
+        class User {
+            +id: UUID
+            +first_name: String
+            +last_name: String
+            +email: String
+            +password_hash: String
+            +role: String
+            +phone: String
+            +job_title: String
+            +is_active: Boolean
+            +created_at: DateTime
+            --
+            +login(): JWT
+            +resetPassword(): void
+        }
+
+        class PasswordReset {
+            +id: UUID
+            +email: String
+            +code: String
+            +expires_at: DateTime
+            +used: Boolean
+            +created_at: DateTime
+            --
+            +isExpired(): Boolean
+            +markUsed(): void
+        }
+
+    }
+
+    package com.formaero.crm.model {
+
+        class Company {
+            +id: UUID
+            +name: String
+            +website: String
+            +city: String
+            +sector: String
+            +phone: String
+            +size: String
+            +annual_revenue: Float
+            +created_at: DateTime
+        }
+
+        class Contact {
+            +id: UUID
+            +first_name: String
+            +last_name: String
+            +email: String
+            +phone: String
+            +job_title: String
+            +city: String
+            +linkedin_url: String
+            +history: String
+            +company_id: UUID
+            +created_at: DateTime
+        }
+
+        class Lead {
+            +id: UUID
+            +title: String
+            +status: LeadStatus
+            +source: String
+            +value_eur: Float
+            +contact_id: UUID
+            +assigned_to: UUID
+            +created_at: DateTime
+            --
+            +updateStatus(status: LeadStatus): void
+        }
+
+        class Deal {
+            +id: UUID
+            +title: String
+            +status: DealStatus
+            +amount: Float
+            +contact_id: UUID
+            +assigned_to: UUID
+            +created_at: DateTime
+            +updated_at: DateTime
+            --
+            +updateStatus(status: DealStatus): void
+        }
+
+        class Task {
+            +id: UUID
+            +title: String
+            +due_at: DateTime
+            +done: Boolean
+            +priority: Priority
+            +contact_id: UUID
+            +lead_id: UUID
+            +assigned_to: UUID
+            +created_at: DateTime
+            --
+            +toggleDone(): void
+            +togglePriority(): void
+        }
+
+        enum LeadStatus {
+            NOUVEAU
+            EN_COURS
+            CONVERTI
+            PERDU
+        }
+
+        enum DealStatus {
+            PROSPECT
+            QUALIFICATION
+            PROPOSITION
+            NEGOCIATION
+            GAGNE
+            PERDU
+        }
+
+        enum Priority {
+            NORMAL
+            URGENT
+        }
+
+    }
+
+}
+
+' ── Relations ──────────────────────────────────────────
+
+User "1" --> "0..*" Lead : assigned_to
+User "1" --> "0..*" Deal : assigned_to
+User "1" --> "0..*" Task : assigned_to
+User "1" --> "0..*" PasswordReset : demande
+
+Company "1" --> "0..*" Contact : emploie
+
+Contact "0..1" --> "0..*" Lead : génère
+Contact "0..1" --> "0..*" Deal : lié à
+Contact "0..1" --> "0..*" Task : lié à
+
+Lead "0..1" --> "0..*" Task : lié à
+
+Lead --> LeadStatus : utilise
+Deal --> DealStatus : utilise
+Task --> Priority : utilise
+
+@enduml

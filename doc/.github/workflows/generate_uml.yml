@@ -1,0 +1,27 @@
+name: Generate UML Diagram
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  generate-uml:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Generate PlantUML diagram
+        uses: holowczak/plantuml-action@v1
+        with:
+          input_file: doc/diagram_model.puml
+          output_dir: doc/
+          format: png
+
+      - name: Commit and push diagram
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add doc/
+          git diff --cached --quiet || git commit -m "docs: Update UML diagram automatically"
+          git push
