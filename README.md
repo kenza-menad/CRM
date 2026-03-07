@@ -1,5 +1,4 @@
-<!-- #  FormaPro CRM
-
+# FormaPro CRM
 > CRM métier pour agence de formation — gestion des contacts, leads, deals, tâches et pipeline commercial.
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
@@ -7,9 +6,8 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?style=for-the-badge&logo=postgresql)
 ![Vercel](https://img.shields.io/badge/Deployed-Vercel-000000?style=for-the-badge&logo=vercel)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)
->
 
- Application en ligne : https://crm-orpin-six-19.vercel.app
+>  **Application en ligne : [https://crm-orpin-six-19.vercel.app](https://crm-orpin-six-19.vercel.app)**
 
 ## 📋 Stack technique
 
