@@ -22,20 +22,8 @@ type Contact = {
   created_at?: string;
 };
 
-type Deal = {
-  id: string;
-  title: string;
-  amount: number;
-  status: string;
-};
-
-type Task = {
-  id: string;
-  title: string;
-  due_at: string | null;
-  done: boolean;
-};
-
+type Deal = { id: string; title: string; amount: number; status: string; };
+type Task = { id: string; title: string; due_at: string | null; done: boolean; };
 type SortKey = "first_name" | "last_name" | "email" | "company_name" | "city" | "job_title";
 type SortDir = "asc" | "desc";
 
@@ -68,6 +56,92 @@ function fmt(n: number) {
   return new Intl.NumberFormat("fr-FR").format(Math.round(n)) + " €";
 }
 
+// ─── SVG Icons ───────────────────────────────────────────────
+const IcoUser = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+const IcoBriefcase = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+  </svg>
+);
+const IcoCheck = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 11 12 14 22 4"/>
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+  </svg>
+);
+const IcoMail = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+    <polyline points="22,6 12,13 2,6"/>
+  </svg>
+);
+const IcoPhone = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.54a16 16 0 0 0 6.05 6.05l.81-.81a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+  </svg>
+);
+const IcoMapPin = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+  </svg>
+);
+const IcoLink = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+  </svg>
+);
+const IcoBuilding = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    <polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+);
+const IcoPencil = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+);
+const IcoTrash = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+    <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+  </svg>
+);
+const IcoSearch = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+);
+const IcoRefresh = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+  </svg>
+);
+const IcoCalendar = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+    <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+const IcoWarning = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+const IcoX = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
+
 // ─── Panneau latéral contact ──────────────────────────────────
 function ContactPanel({ contact, onClose, onEdit }: {
   contact: Contact;
@@ -97,50 +171,49 @@ function ContactPanel({ contact, onClose, onEdit }: {
     load();
   }, [contact.id]);
 
+  const TABS = [
+    { id: "infos" as const, label: "Infos",  icon: <IcoUser /> },
+    { id: "deals" as const, label: "Deals",  icon: <IcoBriefcase />, count: deals.length },
+    { id: "tasks" as const, label: "Tâches", icon: <IcoCheck />,     count: tasks.length },
+  ];
+
   return (
     <>
-      {/* Overlay */}
       <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={onClose} />
-
-      {/* Panneau */}
       <div className="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-white shadow-2xl flex flex-col"
         style={{ animation: "slideIn 0.2s ease-out" }}>
 
-        {/* En-tête panneau */}
+        {/* En-tête */}
         <div className="flex items-start justify-between p-5 border-b border-slate-200">
           <div className="flex items-center gap-3">
             <div className={cx("w-12 h-12 rounded-full flex items-center justify-center text-base font-bold text-white flex-shrink-0", avatarColor(contact.id))}>
               {initials(contact)}
             </div>
             <div>
-              <h2 className="text-base font-semibold text-slate-900">
-                {contact.first_name} {contact.last_name}
-              </h2>
+              <h2 className="text-base font-semibold text-slate-900">{contact.first_name} {contact.last_name}</h2>
               {contact.job_title && <p className="text-xs text-slate-500">{contact.job_title}</p>}
               {contact.company_name && (
-                <p className="text-xs text-emerald-600 font-medium">🏢 {contact.company_name}</p>
+                <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                  <IcoBuilding /> {contact.company_name}
+                </p>
               )}
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={onEdit}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 transition-colors">
-              ✏️ Modifier
+              className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 transition-colors">
+              <IcoPencil /> Modifier
             </button>
             <button onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 transition-colors font-bold">
-              ✕
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 transition-colors">
+              <IcoX />
             </button>
           </div>
         </div>
 
         {/* Onglets */}
         <div className="flex border-b border-slate-200 px-2">
-          {([
-            { id: "infos",  label: "Infos",  icon: "👤" },
-            { id: "deals",  label: `Deals`,  icon: "💼", count: deals.length },
-            { id: "tasks",  label: "Tâches", icon: "✅", count: tasks.length },
-          ] as const).map(tab => (
+          {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={cx(
                 "flex items-center gap-1.5 px-4 py-3 text-xs font-medium border-b-2 transition-all -mb-px",
@@ -148,9 +221,9 @@ function ContactPanel({ contact, onClose, onEdit }: {
                   ? "border-emerald-500 text-emerald-700"
                   : "border-transparent text-slate-500 hover:text-slate-700"
               )}>
-              <span>{tab.icon}</span>
+              <span className={activeTab === tab.id ? "text-emerald-600" : "text-slate-400"}>{tab.icon}</span>
               <span>{tab.label}</span>
-              {"count" in tab && tab.count > 0 && (
+              {"count" in tab && tab.count! > 0 && (
                 <span className={cx(
                   "text-[10px] px-1.5 py-0.5 rounded-full font-bold",
                   activeTab === tab.id ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
@@ -163,49 +236,40 @@ function ContactPanel({ contact, onClose, onEdit }: {
         {/* Contenu */}
         <div className="flex-1 overflow-y-auto p-5">
 
-          {/* ── Onglet Infos ── */}
+          {/* Onglet Infos */}
           {activeTab === "infos" && (
             <div className="space-y-5">
-
-              {/* Coordonnées */}
               <section>
                 <p className="text-[10px] font-bold tracking-widest uppercase text-slate-400 mb-3">Coordonnées</p>
                 <div className="space-y-2.5">
                   {contact.email && (
                     <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-sm flex-shrink-0">📧</div>
-                      <a href={`mailto:${contact.email}`} className="text-sm text-blue-600 hover:underline truncate">
-                        {contact.email}
-                      </a>
+                      <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 flex-shrink-0"><IcoMail /></div>
+                      <a href={`mailto:${contact.email}`} className="text-sm text-blue-600 hover:underline truncate">{contact.email}</a>
                     </div>
                   )}
                   {contact.phone && (
                     <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-sm flex-shrink-0">📞</div>
-                      <a href={`tel:${contact.phone}`} className="text-sm text-slate-700 hover:text-emerald-600 transition-colors">
-                        {contact.phone}
-                      </a>
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 flex-shrink-0"><IcoPhone /></div>
+                      <a href={`tel:${contact.phone}`} className="text-sm text-slate-700 hover:text-emerald-600 transition-colors">{contact.phone}</a>
                     </div>
                   )}
                   {contact.city && (
                     <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-sm flex-shrink-0">📍</div>
+                      <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 flex-shrink-0"><IcoMapPin /></div>
                       <span className="text-sm text-slate-600">{contact.city}</span>
                     </div>
                   )}
                   {contact.linkedin_url && (
                     <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-sm flex-shrink-0">🔗</div>
+                      <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 flex-shrink-0"><IcoLink /></div>
                       <a href={contact.linkedin_url} target="_blank" rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:underline truncate">
-                        Voir profil LinkedIn ↗
-                      </a>
+                        className="text-sm text-blue-600 hover:underline truncate">Voir profil LinkedIn ↗</a>
                     </div>
                   )}
                 </div>
               </section>
 
-              {/* Infos pro */}
               {(contact.job_title || contact.company_name) && (
                 <section>
                   <p className="text-[10px] font-bold tracking-widest uppercase text-slate-400 mb-3">Informations pro</p>
@@ -226,7 +290,6 @@ function ContactPanel({ contact, onClose, onEdit }: {
                 </section>
               )}
 
-              {/* Notes */}
               {contact.history && (
                 <section>
                   <p className="text-[10px] font-bold tracking-widest uppercase text-slate-400 mb-3">Notes</p>
@@ -236,7 +299,6 @@ function ContactPanel({ contact, onClose, onEdit }: {
                 </section>
               )}
 
-              {/* Dates */}
               {contact.created_at && (
                 <section>
                   <p className="text-[10px] font-bold tracking-widest uppercase text-slate-400 mb-2">Informations</p>
@@ -248,16 +310,14 @@ function ContactPanel({ contact, onClose, onEdit }: {
             </div>
           )}
 
-          {/* ── Onglet Deals ── */}
+          {/* Onglet Deals */}
           {activeTab === "deals" && (
             <div>
               {loadingPanel ? (
-                <div className="space-y-2">
-                  {[1,2].map(i => <div key={i} className="h-16 animate-pulse rounded-xl bg-slate-100" />)}
-                </div>
+                <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-16 animate-pulse rounded-xl bg-slate-100" />)}</div>
               ) : deals.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="text-3xl mb-2">💼</div>
+                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400"><IcoBriefcase /></div>
                   <p className="text-sm text-slate-500">Aucun deal associé</p>
                 </div>
               ) : (
@@ -267,9 +327,7 @@ function ContactPanel({ contact, onClose, onEdit }: {
                       <div className="flex items-center justify-between mb-1">
                         <p className="text-sm font-medium text-slate-800 truncate flex-1">{deal.title}</p>
                         <span className={cx("text-xs px-2 py-0.5 rounded-lg font-medium ml-2 flex-shrink-0",
-                          DEAL_STATUS_COLORS[deal.status] ?? "bg-slate-100 text-slate-600")}>
-                          {deal.status}
-                        </span>
+                          DEAL_STATUS_COLORS[deal.status] ?? "bg-slate-100 text-slate-600")}>{deal.status}</span>
                       </div>
                       <p className="text-sm font-bold text-emerald-600">{fmt(Number(deal.amount || 0))}</p>
                     </div>
@@ -279,16 +337,14 @@ function ContactPanel({ contact, onClose, onEdit }: {
             </div>
           )}
 
-          {/* ── Onglet Tâches ── */}
+          {/* Onglet Tâches */}
           {activeTab === "tasks" && (
             <div>
               {loadingPanel ? (
-                <div className="space-y-2">
-                  {[1,2,3].map(i => <div key={i} className="h-12 animate-pulse rounded-xl bg-slate-100" />)}
-                </div>
+                <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-12 animate-pulse rounded-xl bg-slate-100" />)}</div>
               ) : tasks.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="text-3xl mb-2">✅</div>
+                  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400"><IcoCheck /></div>
                   <p className="text-sm text-slate-500">Aucune tâche associée</p>
                 </div>
               ) : (
@@ -305,12 +361,10 @@ function ContactPanel({ contact, onClose, onEdit }: {
                         {task.done && "✓"}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={cx("text-sm font-medium truncate", task.done && "line-through text-slate-400")}>
-                          {task.title}
-                        </p>
+                        <p className={cx("text-sm font-medium truncate", task.done && "line-through text-slate-400")}>{task.title}</p>
                         {task.due_at && (
-                          <p className="text-xs text-slate-400 mt-0.5">
-                            📅 {new Date(task.due_at).toLocaleDateString("fr-FR")}
+                          <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                            <IcoCalendar /> {new Date(task.due_at).toLocaleDateString("fr-FR")}
                           </p>
                         )}
                       </div>
@@ -346,22 +400,12 @@ export default function ContactsPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState<string | null>(null);
-
-  // Filtres
   const [q,         setQ]         = useState("");
   const [companyId, setCompanyId] = useState("all");
-
-  // Tri
-  const [sortKey, setSortKey] = useState<SortKey>("first_name");
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
-
-  // Sélection multiple
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-
-  // Panneau latéral
+  const [sortKey,   setSortKey]   = useState<SortKey>("first_name");
+  const [sortDir,   setSortDir]   = useState<SortDir>("asc");
+  const [selected,  setSelected]  = useState<Set<string>>(new Set());
   const [panelContact, setPanelContact] = useState<Contact | null>(null);
-
-  // Modal
   const [open,      setOpen]      = useState(false);
   const [saving,    setSaving]    = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -375,8 +419,6 @@ export default function ContactsPage() {
   const [company,   setCompany]   = useState("");
   const [history,   setHistory]   = useState("");
   const [formError, setFormError] = useState("");
-
-  // Confirm delete
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function getToken() {
@@ -418,7 +460,6 @@ export default function ContactsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  // ── Tri ──
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
     else { setSortKey(key); setSortDir("asc"); }
@@ -437,7 +478,6 @@ export default function ContactsPage() {
     return <span className="text-emerald-500 ml-1">{sortDir === "asc" ? "↑" : "↓"}</span>;
   }
 
-  // ── Sélection ──
   function toggleSelect(id: string) {
     setSelected(prev => {
       const next = new Set(prev);
@@ -461,8 +501,6 @@ export default function ContactsPage() {
     setSelected(new Set());
   }
 
- 
-  // ── Modal ──
   function openCreate() {
     setFormError(""); setEditingId(null);
     setFirstName(""); setLastName(""); setEmail(""); setPhone("");
@@ -525,235 +563,191 @@ export default function ContactsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="flex">
 
-        {/* Sidebar */}
-        <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-64 md:flex-col md:border-r md:border-slate-300 md:bg-white">
-          <div className="flex items-center gap-3 px-5 py-4">
-            <div className="h-9 w-9 rounded-xl bg-emerald-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">F</span>
-            </div>
+      {/* Header */}
+      <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-sm font-semibold">FormaPro CRM</div>
-              <div className="text-xs text-slate-500">Agence de Formation</div>
+              <h1 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+                <span className="text-slate-500"><IcoUser /></span>
+                Contacts
+              </h1>
+              <p className="text-sm text-slate-500">Gérez vos contacts et leur entreprise associée</p>
             </div>
-          </div>
-          <div className="flex-1 px-3 pb-3 pt-6">
-            <nav className="text-sm space-y-0.5">
-              {[
-                { label: "Dashboard",   path: "/dashboard",   icon: "📊" },
-                { label: "Entreprises", path: "/entreprises", icon: "🏢" },
-                { label: "Leads",       path: "/leads",       icon: "🎯" },
-                { label: "Deals",       path: "/deals",       icon: "💼" },
-                { label: "Pipeline",    path: "/pipeline",    icon: "📈" },
-                { label: "Tâches",      path: "/tasks",       icon: "✅" },
-              ].map(item => (
-                <button key={item.path} onClick={() => router.push(item.path)}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-slate-600 hover:bg-slate-50">
-                  <span>{item.icon}</span><span>{item.label}</span>
-                </button>
-              ))}
-              <div className="pt-3 mt-3 border-t border-slate-100">
-                <button onClick={() => router.push("/contacts")}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left bg-emerald-50 text-emerald-700 font-medium">
-                  <span>👤</span><span>Contacts</span>
-                </button>
-                <button onClick={() => router.push("/settings")}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-slate-600 hover:bg-slate-50 mt-0.5">
-                  <span>⚙️</span><span>Paramètres</span>
-                </button>
+
+            <div className="hidden md:flex items-center gap-6 text-sm">
+              <div className="text-center">
+                <div className="font-bold text-slate-900">{contacts.length}</div>
+                <div className="text-xs text-slate-400">Total contacts</div>
               </div>
-            </nav>
-          </div>
-        </aside>
-
-        {/* Main */}
-        <main className="flex-1 min-w-0 flex flex-col">
-
-          {/* Header */}
-          <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur">
-            <div className="px-6 py-4">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h1 className="text-xl font-semibold text-slate-900">👤 Contacts</h1>
-                  <p className="text-sm text-slate-500">Gérez vos contacts et leur entreprise associée</p>
-                </div>
-
-                <div className="hidden md:flex items-center gap-6 text-sm">
-                  <div className="text-center">
-                    <div className="font-bold text-slate-900">{contacts.length}</div>
-                    <div className="text-xs text-slate-400">Total contacts</div>
-                  </div>
-                  <div className="w-px h-8 bg-slate-200" />
-                  <div className="text-center">
-                    <div className="font-bold text-slate-900">{companies.length}</div>
-                    <div className="text-xs text-slate-400">Entreprises</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button onClick={openCreate}
-                    className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
-                    + Nouveau contact
-                  </button>
-                  <button onClick={loadContacts}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50"
-                    title="Rafraîchir">⟳</button>
-                </div>
+              <div className="w-px h-8 bg-slate-200" />
+              <div className="text-center">
+                <div className="font-bold text-slate-900">{companies.length}</div>
+                <div className="text-xs text-slate-400">Entreprises</div>
               </div>
+            </div>
 
-              {/* Toolbar */}
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2 flex-1 min-w-48 rounded-xl border border-slate-200 bg-white px-3 py-2 focus-within:border-emerald-400">
-                  <span className="text-slate-400 text-sm">🔎</span>
-                  <input className="w-full bg-transparent text-sm outline-none"
-                    placeholder="Rechercher (nom, email, ville...)..."
-                    value={q} onChange={e => setQ(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && loadContacts()} />
-                </div>
-
-                <select value={companyId} onChange={e => setCompanyId(e.target.value)}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none">
-                  <option value="all">Toutes les entreprises</option>
-                  {companies.map(co => <option key={co.id} value={co.id}>{co.name}</option>)}
-                </select>
-
-                <button onClick={loadContacts}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50 text-slate-600">
-                  Filtrer
-                </button>
-
-                {/* Barre sélection multiple */}
-                {selected.size > 0 && (
-                  <div className="flex items-center gap-2 ml-auto rounded-xl bg-rose-50 border border-rose-200 px-3 py-2">
-                    <span className="text-xs font-medium text-rose-700">{selected.size} sélectionné(s)</span>
-                    <button onClick={deleteSelected}
-                      className="rounded-lg bg-rose-500 px-2 py-1 text-xs font-medium text-white hover:bg-rose-600 transition-colors">
-                      🗑 Supprimer
-                    </button>
-                    <button onClick={() => setSelected(new Set())}
-                      className="text-xs text-rose-400 hover:text-rose-600">✕</button>
-                  </div>
-                )}
-              </div>
+            <div className="flex items-center gap-2">
+              <button onClick={openCreate}
+                className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                + Nouveau contact
+              </button>
+              <button onClick={loadContacts}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-500 hover:bg-slate-50 flex items-center justify-center"
+                title="Rafraîchir">
+                <IcoRefresh />
+              </button>
             </div>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 px-6 py-6">
-            {error && (
-              <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                ⚠️ {error}
+          {/* Toolbar */}
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 flex-1 min-w-48 rounded-xl border border-slate-200 bg-white px-3 py-2 focus-within:border-emerald-400">
+              <span className="text-slate-400"><IcoSearch /></span>
+              <input className="w-full bg-transparent text-sm outline-none"
+                placeholder="Rechercher (nom, email, ville...)..."
+                value={q} onChange={e => setQ(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && loadContacts()} />
+            </div>
+
+            <select value={companyId} onChange={e => setCompanyId(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none">
+              <option value="all">Toutes les entreprises</option>
+              {companies.map(co => <option key={co.id} value={co.id}>{co.name}</option>)}
+            </select>
+
+            <button onClick={loadContacts}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50 text-slate-600">
+              Filtrer
+            </button>
+
+            {selected.size > 0 && (
+              <div className="flex items-center gap-2 ml-auto rounded-xl bg-rose-50 border border-rose-200 px-3 py-2">
+                <span className="text-xs font-medium text-rose-700">{selected.size} sélectionné(s)</span>
+                <button onClick={deleteSelected}
+                  className="flex items-center gap-1 rounded-lg bg-rose-500 px-2 py-1 text-xs font-medium text-white hover:bg-rose-600 transition-colors">
+                  <IcoTrash /> Supprimer
+                </button>
+                <button onClick={() => setSelected(new Set())}
+                  className="text-rose-400 hover:text-rose-600"><IcoX size={12} /></button>
               </div>
             )}
+          </div>
+        </div>
+      </div>
 
-            {loading ? <SkeletonContacts /> : contacts.length === 0 ? (
-              <EmptyState onCreate={openCreate} />
-            ) : (
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      {/* Content */}
+      <div className="px-6 py-6">
+        {error && (
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 flex items-center gap-2">
+            <IcoWarning /> {error}
+          </div>
+        )}
 
-                {/* Header tableau avec colonnes triables */}
-                <div className="grid grid-cols-12 gap-2 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                  {/* Checkbox tout sélectionner */}
-                  <div className="col-span-1 flex items-center">
-                    <input type="checkbox"
-                      checked={selected.size === sorted.length && sorted.length > 0}
-                      onChange={toggleAll}
-                      className="w-4 h-4 rounded border-slate-300 accent-emerald-600 cursor-pointer" />
-                  </div>
-                  <div className="col-span-3 cursor-pointer hover:text-slate-700 select-none" onClick={() => toggleSort("first_name")}>
-                    Contact <SortIcon k="first_name" />
-                  </div>
-                  <div className="col-span-2 cursor-pointer hover:text-slate-700 select-none" onClick={() => toggleSort("job_title")}>
-                    Poste <SortIcon k="job_title" />
-                  </div>
-                  <div className="col-span-2 cursor-pointer hover:text-slate-700 select-none" onClick={() => toggleSort("company_name")}>
-                    Entreprise <SortIcon k="company_name" />
-                  </div>
-                  <div className="col-span-2 cursor-pointer hover:text-slate-700 select-none" onClick={() => toggleSort("city")}>
-                    Ville <SortIcon k="city" />
-                  </div>
-                  <div className="col-span-2 text-right">Actions</div>
+        {loading ? <SkeletonContacts /> : contacts.length === 0 ? (
+          <EmptyState onCreate={openCreate} />
+        ) : (
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <div className="grid grid-cols-12 gap-2 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <div className="col-span-1 flex items-center">
+                <input type="checkbox"
+                  checked={selected.size === sorted.length && sorted.length > 0}
+                  onChange={toggleAll}
+                  className="w-4 h-4 rounded border-slate-300 accent-emerald-600 cursor-pointer" />
+              </div>
+              <div className="col-span-3 cursor-pointer hover:text-slate-700 select-none" onClick={() => toggleSort("first_name")}>
+                Contact <SortIcon k="first_name" />
+              </div>
+              <div className="col-span-2 cursor-pointer hover:text-slate-700 select-none" onClick={() => toggleSort("job_title")}>
+                Poste <SortIcon k="job_title" />
+              </div>
+              <div className="col-span-2 cursor-pointer hover:text-slate-700 select-none" onClick={() => toggleSort("company_name")}>
+                Entreprise <SortIcon k="company_name" />
+              </div>
+              <div className="col-span-2 cursor-pointer hover:text-slate-700 select-none" onClick={() => toggleSort("city")}>
+                Ville <SortIcon k="city" />
+              </div>
+              <div className="col-span-2 text-right">Actions</div>
+            </div>
+
+            {sorted.map(c => (
+              <div key={c.id}
+                onClick={() => router.push(`/contacts/${c.id}`)}
+                className={cx(
+                  "grid grid-cols-12 gap-2 px-5 py-3.5 border-b border-slate-100 last:border-0 items-center hover:bg-slate-50 transition-colors cursor-pointer",
+                  selected.has(c.id) && "bg-emerald-50/50",
+                  panelContact?.id === c.id && "bg-emerald-50 border-l-2 border-l-emerald-500"
+                )}>
+
+                <div className="col-span-1" onClick={e => e.stopPropagation()}>
+                  <input type="checkbox"
+                    checked={selected.has(c.id)}
+                    onChange={() => toggleSelect(c.id)}
+                    className="w-4 h-4 rounded border-slate-300 accent-emerald-600 cursor-pointer" />
                 </div>
 
-                {sorted.map(c => (
-                  <div key={c.id}
-                    onClick={() => router.push(`/contacts/${c.id}`)}
-                    className={cx(
-                      "grid grid-cols-12 gap-2 px-5 py-3.5 border-b border-slate-100 last:border-0 items-center hover:bg-slate-50 transition-colors cursor-pointer",
-                      selected.has(c.id) && "bg-emerald-50/50",
-                      panelContact?.id === c.id && "bg-emerald-50 border-l-2 border-l-emerald-500"
-                    )}>
-
-                    {/* Checkbox */}
-                    <div className="col-span-1" onClick={e => e.stopPropagation()}>
-                      <input type="checkbox"
-                        checked={selected.has(c.id)}
-                        onChange={() => toggleSelect(c.id)}
-                        className="w-4 h-4 rounded border-slate-300 accent-emerald-600 cursor-pointer" />
-                    </div>
-
-                    {/* Contact */}
-                    <div className="col-span-3 flex items-center gap-2.5">
-                      <div className={cx("w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0", avatarColor(c.id))}>
-                        {initials(c)}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-sm font-medium text-slate-900 truncate">{c.first_name} {c.last_name}</div>
-                        <div className="text-xs text-slate-400 truncate">{c.email}</div>
-                      </div>
-                    </div>
-
-                    {/* Poste */}
-                    <div className="col-span-2 text-xs text-slate-500 truncate">
-                      {c.job_title || "—"}
-                    </div>
-
-                    {/* Entreprise */}
-                    <div className="col-span-2 text-xs text-slate-500 truncate">
-                      {c.company_name ? `🏢 ${c.company_name}` : "—"}
-                    </div>
-
-                    {/* Ville */}
-                    <div className="col-span-2 text-xs text-slate-500 truncate">
-                      {c.city ? `📍 ${c.city}` : "—"}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="col-span-2 flex justify-end gap-1" onClick={e => e.stopPropagation()}>
-                      <button onClick={e => openEdit(c, e)}
-                        className="rounded-lg px-2 py-1 text-xs text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-                        title="Modifier">✏️</button>
-                      {deletingId === c.id ? (
-                        <div className="flex gap-1">
-                          <button onClick={e => { e.stopPropagation(); setDeletingId(null); }}
-                            className="rounded-lg px-2 py-1 text-xs text-slate-500 hover:bg-slate-100">Annuler</button>
-                          <button onClick={e => onDelete(c.id, e)}
-                            className="rounded-lg px-2 py-1 text-xs text-white bg-rose-500 hover:bg-rose-600">Confirmer</button>
-                        </div>
-                      ) : (
-                        <button onClick={e => { e.stopPropagation(); setDeletingId(c.id); }}
-                          className="rounded-lg px-2 py-1 text-xs text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                          title="Supprimer">🗑</button>
-                      )}
-                    </div>
+                <div className="col-span-3 flex items-center gap-2.5">
+                  <div className={cx("w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0", avatarColor(c.id))}>
+                    {initials(c)}
                   </div>
-                ))}
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-slate-900 truncate">{c.first_name} {c.last_name}</div>
+                    <div className="text-xs text-slate-400 truncate">{c.email}</div>
+                  </div>
+                </div>
 
-                {/* Footer */}
-                <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-                  <span className="font-medium">{contacts.length} contact{contacts.length > 1 ? "s" : ""}</span>
-                  {selected.size > 0 && (
-                    <span className="text-emerald-600 font-medium">{selected.size} sélectionné{selected.size > 1 ? "s" : ""}</span>
+                <div className="col-span-2 text-xs text-slate-500 truncate">{c.job_title || "—"}</div>
+
+                <div className="col-span-2 text-xs text-slate-500 truncate">
+                  {c.company_name ? (
+                    <span className="flex items-center gap-1">
+                      <span className="text-slate-400"><IcoBuilding /></span>
+                      {c.company_name}
+                    </span>
+                  ) : "—"}
+                </div>
+
+                <div className="col-span-2 text-xs text-slate-500 truncate">
+                  {c.city ? (
+                    <span className="flex items-center gap-1">
+                      <span className="text-slate-400"><IcoMapPin /></span>
+                      {c.city}
+                    </span>
+                  ) : "—"}
+                </div>
+
+                <div className="col-span-2 flex justify-end gap-1" onClick={e => e.stopPropagation()}>
+                  <button onClick={e => openEdit(c, e)}
+                    className="rounded-lg px-2 py-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                    title="Modifier"><IcoPencil /></button>
+                  {deletingId === c.id ? (
+                    <div className="flex gap-1">
+                      <button onClick={e => { e.stopPropagation(); setDeletingId(null); }}
+                        className="rounded-lg px-2 py-1 text-xs text-slate-500 hover:bg-slate-100">Annuler</button>
+                      <button onClick={e => onDelete(c.id, e)}
+                        className="rounded-lg px-2 py-1 text-xs text-white bg-rose-500 hover:bg-rose-600">Confirmer</button>
+                    </div>
+                  ) : (
+                    <button onClick={e => { e.stopPropagation(); setDeletingId(c.id); }}
+                      className="rounded-lg px-2 py-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      title="Supprimer"><IcoTrash /></button>
                   )}
                 </div>
               </div>
-            )}
+            ))}
+
+            <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+              <span className="font-medium">{contacts.length} contact{contacts.length > 1 ? "s" : ""}</span>
+              {selected.size > 0 && (
+                <span className="text-emerald-600 font-medium">{selected.size} sélectionné{selected.size > 1 ? "s" : ""}</span>
+              )}
+            </div>
           </div>
-        </main>
+        )}
       </div>
 
-      {/* ══ Panneau latéral ══ */}
+      {/* Panneau latéral */}
       {panelContact && (
         <ContactPanel
           contact={panelContact}
@@ -762,7 +756,7 @@ export default function ContactsPage() {
         />
       )}
 
-      {/* ══ Modal création / édition ══ */}
+      {/* Modal création / édition */}
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={e => { if (e.target === e.currentTarget) closeModal(); }}>
@@ -776,7 +770,9 @@ export default function ContactsPage() {
                 <p className="text-xs text-slate-400 mt-0.5">Champs avec * obligatoires</p>
               </div>
               <button onClick={closeModal}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors text-lg font-bold">✕</button>
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                <IcoX />
+              </button>
             </div>
 
             <form onSubmit={onSubmit} className="space-y-4">
@@ -842,7 +838,9 @@ export default function ContactsPage() {
               </div>
 
               {formError && (
-                <div className="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2.5 text-sm text-rose-600">⚠️ {formError}</div>
+                <div className="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2.5 text-sm text-rose-600 flex items-center gap-2">
+                  <IcoWarning /> {formError}
+                </div>
               )}
 
               <div className="flex gap-3 pt-2">
@@ -871,11 +869,14 @@ export default function ContactsPage() {
   );
 }
 
-/* ══ Sub-components ══ */
 function EmptyState({ onCreate }: { onCreate: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-12 text-center">
-      <div className="text-4xl mb-3">👤</div>
+      <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
       <div className="text-lg font-semibold text-slate-800">Aucun contact</div>
       <div className="mt-1 text-sm text-slate-500">Crée ton premier contact et associe-le à une entreprise.</div>
       <button onClick={onCreate}

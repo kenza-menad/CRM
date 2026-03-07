@@ -41,6 +41,68 @@ function avatarColor(id: string) {
   return AVATAR_COLORS[n % AVATAR_COLORS.length];
 }
 
+// ─── SVG Icons ───────────────────────────────────────────────
+const IcoBuilding = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    <polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+);
+const IcoSearch = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+);
+const IcoRefresh = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+  </svg>
+);
+const IcoDownload = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+);
+const IcoPencil = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+);
+const IcoTrash = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"/>
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+    <path d="M10 11v6"/><path d="M14 11v6"/>
+    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+  </svg>
+);
+const IcoMapPin = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+    <circle cx="12" cy="10" r="3"/>
+  </svg>
+);
+const IcoUser = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+const IcoWarning = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+const IcoX = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
+
 export default function EntreprisesPage() {
   const router = useRouter();
 
@@ -52,33 +114,23 @@ export default function EntreprisesPage() {
   const [companies,  setCompanies]  = useState<Company[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState<string | null>(null);
-
-  // Filtres
   const [query,      setQuery]      = useState("");
   const [filterSect, setFilterSect] = useState("all");
   const [filterSize, setFilterSize] = useState("all");
-
-  // Tri
-  const [sortKey, setSortKey] = useState<SortKey>("name");
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
-
-  // Sélection multiple
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-
-  // Modal
-  const [open,      setOpen]      = useState(false);
-  const [saving,    setSaving]    = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [fName,     setFName]     = useState("");
-  const [fWebsite,  setFWebsite]  = useState("");
-  const [fCity,     setFCity]     = useState("");
-  const [fSector,   setFSector]   = useState("");
-  const [fPhone,    setFPhone]    = useState("");
-  const [fSize,     setFSize]     = useState("");
-  const [fRevenue,  setFRevenue]  = useState("");
-  const [formError, setFormError] = useState("");
-
-  // Confirm delete
+  const [sortKey,    setSortKey]    = useState<SortKey>("name");
+  const [sortDir,    setSortDir]    = useState<SortDir>("asc");
+  const [selected,   setSelected]   = useState<Set<string>>(new Set());
+  const [open,       setOpen]       = useState(false);
+  const [saving,     setSaving]     = useState(false);
+  const [editingId,  setEditingId]  = useState<string | null>(null);
+  const [fName,      setFName]      = useState("");
+  const [fWebsite,   setFWebsite]   = useState("");
+  const [fCity,      setFCity]      = useState("");
+  const [fSector,    setFSector]    = useState("");
+  const [fPhone,     setFPhone]     = useState("");
+  const [fSize,      setFSize]      = useState("");
+  const [fRevenue,   setFRevenue]   = useState("");
+  const [formError,  setFormError]  = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function getToken() {
@@ -106,7 +158,6 @@ export default function EntreprisesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  // Tri
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
     else { setSortKey(key); setSortDir("asc"); }
@@ -116,7 +167,6 @@ export default function EntreprisesPage() {
     return <span className="text-emerald-500 ml-1">{sortDir === "asc" ? "↑" : "↓"}</span>;
   }
 
-  // Filtres + tri
   const sorted = useMemo(() => {
     let out = companies.filter(c => {
       const q = query.toLowerCase();
@@ -132,7 +182,6 @@ export default function EntreprisesPage() {
     });
   }, [companies, query, filterSect, filterSize, sortKey, sortDir]);
 
-  // Sélection
   function toggleSelect(id: string) {
     setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }
@@ -149,7 +198,6 @@ export default function EntreprisesPage() {
     setSelected(new Set());
   }
 
-  // Export CSV
   function exportCSV() {
     const rows = [
       ["Nom", "Secteur", "Ville", "Taille", "Téléphone", "Site web"],
@@ -162,7 +210,6 @@ export default function EntreprisesPage() {
     URL.revokeObjectURL(url);
   }
 
-  // Modal
   function openCreate() {
     setFormError(""); setEditingId(null);
     setFName(""); setFWebsite(""); setFCity(""); setFSector("");
@@ -219,48 +266,6 @@ export default function EntreprisesPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="flex">
-
-        {/* Sidebar */}
-        <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-64 md:flex-col md:border-r md:border-slate-300 md:bg-white">
-          <div className="flex items-center gap-3 px-5 py-4">
-            <div className="h-9 w-9 rounded-xl bg-emerald-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">F</span>
-            </div>
-            <div>
-              <div className="text-sm font-semibold">FormaPro CRM</div>
-              <div className="text-xs text-slate-500">Agence de Formation</div>
-            </div>
-          </div>
-          <div className="flex-1 px-3 pb-3 pt-6">
-            <nav className="text-sm space-y-0.5">
-              {[
-                { label: "Dashboard", path: "/dashboard", icon: "📊" },
-                { label: "Contacts",  path: "/contacts",  icon: "👤" },
-                { label: "Leads",     path: "/leads",     icon: "🎯" },
-                { label: "Deals",     path: "/deals",     icon: "💼" },
-                { label: "Pipeline",  path: "/pipeline",  icon: "📈" },
-                { label: "Tâches",    path: "/tasks",     icon: "✅" },
-              ].map(item => (
-                <button key={item.path} onClick={() => router.push(item.path)}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-slate-600 hover:bg-slate-50">
-                  <span>{item.icon}</span><span>{item.label}</span>
-                </button>
-              ))}
-              <div className="pt-3 mt-3 border-t border-slate-100">
-                <button onClick={() => router.push("/entreprises")}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left bg-emerald-50 text-emerald-700 font-medium">
-                  <span>🏢</span><span>Entreprises</span>
-                </button>
-                <button onClick={() => router.push("/settings")}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-slate-600 hover:bg-slate-50 mt-0.5">
-                  <span>⚙️</span><span>Paramètres</span>
-                </button>
-              </div>
-            </nav>
-          </div>
-        </aside>
-
-        {/* Main */}
         <main className="flex-1 min-w-0 flex flex-col">
 
           {/* Header */}
@@ -268,11 +273,13 @@ export default function EntreprisesPage() {
             <div className="px-6 py-4">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-xl font-semibold text-slate-900">🏢 Entreprises</h1>
+                  <h1 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+                    <span className="text-slate-500"><IcoBuilding /></span>
+                    Entreprises
+                  </h1>
                   <p className="text-sm text-slate-500">Gérez vos entreprises et partenaires</p>
                 </div>
 
-                {/* KPIs */}
                 <div className="hidden md:flex items-center gap-6 text-sm">
                   <div className="text-center">
                     <div className="font-bold text-slate-900">{companies.length}</div>
@@ -287,22 +294,26 @@ export default function EntreprisesPage() {
 
                 <div className="flex items-center gap-2">
                   <button onClick={exportCSV}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
-                    title="Exporter CSV">⬇ CSV</button>
+                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+                    title="Exporter CSV">
+                    <IcoDownload /> CSV
+                  </button>
                   <button onClick={openCreate}
                     className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
                     + Nouvelle entreprise
                   </button>
                   <button onClick={loadCompanies}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50"
-                    title="Rafraîchir">⟳</button>
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-500 hover:bg-slate-50 flex items-center justify-center"
+                    title="Rafraîchir">
+                    <IcoRefresh />
+                  </button>
                 </div>
               </div>
 
               {/* Toolbar */}
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2 flex-1 min-w-48 rounded-xl border border-slate-200 bg-white px-3 py-2 focus-within:border-emerald-400">
-                  <span className="text-slate-400 text-sm">🔎</span>
+                  <span className="text-slate-400"><IcoSearch /></span>
                   <input className="w-full bg-transparent text-sm outline-none"
                     placeholder="Rechercher une entreprise..."
                     value={query} onChange={e => setQuery(e.target.value)} />
@@ -322,10 +333,12 @@ export default function EntreprisesPage() {
                   <div className="flex items-center gap-2 ml-auto rounded-xl bg-rose-50 border border-rose-200 px-3 py-2">
                     <span className="text-xs font-medium text-rose-700">{selected.size} sélectionnée(s)</span>
                     <button onClick={deleteSelected}
-                      className="rounded-lg bg-rose-500 px-2 py-1 text-xs font-medium text-white hover:bg-rose-600">
-                      🗑 Supprimer
+                      className="flex items-center gap-1 rounded-lg bg-rose-500 px-2 py-1 text-xs font-medium text-white hover:bg-rose-600">
+                      <IcoTrash /> Supprimer
                     </button>
-                    <button onClick={() => setSelected(new Set())} className="text-xs text-rose-400 hover:text-rose-600">✕</button>
+                    <button onClick={() => setSelected(new Set())} className="text-rose-400 hover:text-rose-600">
+                      <IcoX size={12} />
+                    </button>
                   </div>
                 )}
               </div>
@@ -335,8 +348,8 @@ export default function EntreprisesPage() {
           {/* Content */}
           <div className="flex-1 px-6 py-6">
             {error && (
-              <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                ⚠️ {error}
+              <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 flex items-center gap-2">
+                <IcoWarning /> {error}
               </div>
             )}
 
@@ -344,6 +357,7 @@ export default function EntreprisesPage() {
               <EmptyState onCreate={openCreate} />
             ) : (
               <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+
                 {/* Header triable */}
                 <div className="grid grid-cols-12 gap-2 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
                   <div className="col-span-1 flex items-center">
@@ -408,7 +422,12 @@ export default function EntreprisesPage() {
 
                     {/* Ville */}
                     <div className="col-span-2 text-xs text-slate-500 truncate">
-                      {c.city ? `📍 ${c.city}` : "—"}
+                      {c.city ? (
+                        <span className="flex items-center gap-1">
+                          <span className="text-slate-400"><IcoMapPin /></span>
+                          {c.city}
+                        </span>
+                      ) : "—"}
                     </div>
 
                     {/* Taille */}
@@ -422,7 +441,8 @@ export default function EntreprisesPage() {
                     <div className="col-span-1 text-xs text-slate-500">
                       {c.contacts_count !== undefined ? (
                         <span className="flex items-center gap-1">
-                          <span>👤</span> {c.contacts_count}
+                          <span className="text-slate-400"><IcoUser /></span>
+                          {c.contacts_count}
                         </span>
                       ) : "—"}
                     </div>
@@ -430,7 +450,10 @@ export default function EntreprisesPage() {
                     {/* Actions */}
                     <div className="col-span-2 flex justify-end gap-1" onClick={e => e.stopPropagation()}>
                       <button onClick={e => openEdit(c, e)}
-                        className="rounded-lg px-2 py-1 text-xs text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors">✏️</button>
+                        className="rounded-lg px-2 py-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                        title="Modifier">
+                        <IcoPencil />
+                      </button>
                       {deletingId === c.id ? (
                         <div className="flex gap-1">
                           <button onClick={e => { e.stopPropagation(); setDeletingId(null); }}
@@ -440,7 +463,10 @@ export default function EntreprisesPage() {
                         </div>
                       ) : (
                         <button onClick={e => { e.stopPropagation(); setDeletingId(c.id); }}
-                          className="rounded-lg px-2 py-1 text-xs text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">🗑</button>
+                          className="rounded-lg px-2 py-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                          title="Supprimer">
+                          <IcoTrash />
+                        </button>
                       )}
                     </div>
                   </div>
@@ -472,13 +498,18 @@ export default function EntreprisesPage() {
                 <p className="text-xs text-slate-400 mt-0.5">Renseigne les informations principales</p>
               </div>
               <button onClick={closeModal}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 text-lg font-bold">✕</button>
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+                <IcoX />
+              </button>
             </div>
 
             <form onSubmit={onSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">Nom <span className="text-rose-500">*</span></label>
-                <input autoFocus className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                  Nom <span className="text-rose-500">*</span>
+                </label>
+                <input autoFocus
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
                   value={fName} onChange={e => setFName(e.target.value)} required placeholder="Ex: Acme Corp" />
               </div>
 
@@ -522,18 +553,23 @@ export default function EntreprisesPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1.5">CA Annuel (€)</label>
-                  <input type="number" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
+                  <input type="number"
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
                     value={fRevenue} onChange={e => setFRevenue(e.target.value)} placeholder="Ex: 500000" />
                 </div>
               </div>
 
               {formError && (
-                <div className="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2.5 text-sm text-rose-600">⚠️ {formError}</div>
+                <div className="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2.5 text-sm text-rose-600 flex items-center gap-2">
+                  <IcoWarning /> {formError}
+                </div>
               )}
 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={closeModal}
-                  className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">Annuler</button>
+                  className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+                  Annuler
+                </button>
                 <button type="submit" disabled={saving}
                   className="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
                   {saving ? (
@@ -558,7 +594,12 @@ export default function EntreprisesPage() {
 function EmptyState({ onCreate }: { onCreate: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-12 text-center">
-      <div className="text-4xl mb-3">🏢</div>
+      <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
       <div className="text-lg font-semibold text-slate-800">Aucune entreprise</div>
       <div className="mt-1 text-sm text-slate-500">Commence par créer ta première entreprise.</div>
       <button onClick={onCreate}

@@ -247,42 +247,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-slate-50">
       <div className="flex">
 
-        {/* Sidebar */}
-        <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-64 md:flex-col md:border-r md:border-slate-300 md:bg-white">
-          <div className="flex items-center gap-3 px-5 py-4">
-            <div className="h-9 w-9 rounded-xl bg-emerald-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">F</span>
-            </div>
-            <div>
-              <div className="text-sm font-semibold">FormaPro CRM</div>
-              <div className="text-xs text-slate-500">Agence de Formation</div>
-            </div>
-          </div>
-          <div className="flex-1 px-3 pb-3 pt-6">
-            <nav className="text-sm space-y-0.5">
-              {[
-                { label: "Dashboard",   path: "/dashboard",   icon: "📊" },
-                { label: "Contacts",    path: "/contacts",    icon: "👤" },
-                { label: "Entreprises", path: "/entreprises", icon: "🏢" },
-                { label: "Leads",       path: "/leads",       icon: "🎯" },
-                { label: "Deals",       path: "/deals",       icon: "💼" },
-                { label: "Pipeline",    path: "/pipeline",    icon: "📈" },
-                { label: "Tâches",      path: "/tasks",       icon: "✅" },
-              ].map(item => (
-                <button key={item.path} onClick={() => router.push(item.path)}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-slate-600 hover:bg-slate-50">
-                  <span>{item.icon}</span><span>{item.label}</span>
-                </button>
-              ))}
-              <div className="pt-3 mt-3 border-t border-slate-100">
-                <button onClick={() => router.push("/settings")}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left bg-emerald-50 text-emerald-700 font-medium">
-                  <span>⚙️</span><span>Paramètres</span>
-                </button>
-              </div>
-            </nav>
-          </div>
-        </aside>
+       
 
         {/* Main */}
         <main className="flex-1 min-w-0">
