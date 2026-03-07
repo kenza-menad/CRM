@@ -267,8 +267,8 @@ FormaPro est une agence spécialisée dans la formation en **Marketing Digital**
 
 ### 1.2 Besoins fonctionnels
 
-| ID | Besoin | Priorité |
-|----|--------|----------|
+| ID | Besoin | 
+|----|--------|
 | BF01 | Authentification sécurisée (login, inscription, reset password) |
 | BF02 | Gestion CRUD des contacts avec fiches détaillées |
 | BF03 | Gestion CRUD des entreprises partenaires | 
