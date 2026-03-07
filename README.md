@@ -143,6 +143,10 @@ classDiagram
     Lead "0..1" --> "0..*" Task : lié à
 ```
 
+> 📌 Le diagramme PNG ci-dessous est généré automatiquement à chaque push via GitHub Actions :
+
+![Diagramme de classes](doc/diagram_model.png)
+
 ---
 
 ## 🗃️ Schéma base de données
