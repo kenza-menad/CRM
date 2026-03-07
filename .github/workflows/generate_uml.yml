@@ -134,7 +134,7 @@ jobs:
 
       - name: Generate PNG from Mermaid
         run: |
-          mmdc -i /tmp/diagram.mmd -o doc/diagram_model.png -t neutral -b white --width 1200
+          mmdc -i /tmp/diagram.mmd -o doc/diagram_model.png -t neutral -b white --width 1200 --puppeteer-args="--no-sandbox"
 
       - name: Commit and push diagram
         run: |
