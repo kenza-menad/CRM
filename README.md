@@ -814,8 +814,7 @@ BREVO_SENDER_EMAIL=kenzamenad6@gmail.com
 BREVO_SENDER_NAME="FormaPro CRM"
 
 # Frontend
-NEXT_PUBLIC_API_URL=http://localhost:3000
-# En production : NEXT_PUBLIC_API_URL=https://formaprocrmbackend.vercel.app
+ NEXT_PUBLIC_API_URL=https://formaprocrmbackend.vercel.app
 ```
 ---
 
