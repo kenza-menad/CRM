@@ -517,7 +517,8 @@ Système Brevo  ──── Acteur externe, envoi d'emails
 | Ajouter une note | Admin, Commercial | Note interne horodatée |
 | Créer une entreprise | Admin, Commercial | Fiche avec secteur, CA, phase de vie |
 | Voir la fiche entreprise | Tous | Contacts + deals + résumé financier |
-| Exporter en CSV | Admin | Export de la liste des entreprises |
+
+
 
 ### Module Leads & Pipeline
 
