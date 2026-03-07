@@ -2,10 +2,11 @@
 
 > CRM métier pour agence de formation — gestion des contacts, leads, deals, tâches et pipeline commercial.
 
-![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
-![Node.js](https://img.shields.io/badge/Node.js-Express-green?logo=node.js)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-blue?logo=postgresql)
-![Docker](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
+![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
+![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?style=for-the-badge&logo=postgresql)
+![Vercel](https://img.shields.io/badge/Deployed-Vercel-000000?style=for-the-badge&logo=vercel)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)
 
 ---
 
@@ -212,7 +213,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
 ![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-4169E1?style=for-the-badge&logo=postgresql)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?style=for-the-badge&logo=postgresql)
 ![Vercel](https://img.shields.io/badge/Deployed-Vercel-000000?style=for-the-badge&logo=vercel)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)
 
@@ -309,7 +310,7 @@ Un CRM web complet, moderne et hébergé dans le cloud permettant de :
 | BNF04 | **Responsive** | Interface utilisable sur mobile et desktop |
 | BNF05 | **Maintenabilité** | Architecture modulaire, code documenté |
 | BNF06 | **Déploiement** | CI/CD automatique GitHub → Vercel |
-| BNF07 | **Scalabilité** | PostgreSQL cloud Supabase, extensible |
+| BNF07 | **Scalabilité** | PostgreSQL cloud Neon, extensible |
 
 ---
 
@@ -337,7 +338,7 @@ Un CRM web complet, moderne et hébergé dans le cloud permettant de :
 
 | Service | Type | Rôle |
 |---------|------|------|
-| **Supabase** | SaaS (PostgreSQL cloud) | Base de données relationnelle managée |
+| **Neon** | SaaS (PostgreSQL cloud) | Base de données relationnelle managée |
 | **Brevo** | SaaS (Email API) | Envoi d'emails transactionnels et marketing |
 | **Vercel** | SaaS (Hébergement) | Déploiement frontend + backend serverless |
 | **Docker** | Containerisation | Environnement de développement local |
@@ -385,7 +386,7 @@ Un CRM web complet, moderne et hébergé dans le cloud permettant de :
            ▼                             ▼
 ┌─────────────────────┐      ┌──────────────────────────┐
 │  PostgreSQL         │      │  Brevo Email API         │
-│  via Supabase       │      │                          │
+│  via Neon           │      │                          │
 │  (Cloud managé)     │      │  POST /v3/smtp/email     │
 │                     │      │  Logs → emails_log table │
 │  - Sauvegardes auto │      │                          │
@@ -823,7 +824,7 @@ async function sendEmail({ to, subject, htmlContent, type, contactId, userId }) 
 
 - [Node.js](https://nodejs.org) >= 18
 - [Docker](https://docker.com) et Docker Compose
-- Compte [Supabase](https://supabase.com) (PostgreSQL cloud gratuit)
+- Compte [Neon](https://Neon.com) (PostgreSQL cloud gratuit)
 - Compte [Brevo](https://brevo.com) (clé API gratuite)
 
 ### Étapes
@@ -880,7 +881,7 @@ docker compose ps
 | Service | Usage | Plan |
 |---------|-------|------|
 | **Vercel** | Hébergement frontend + backend | Gratuit (Hobby) |
-| **Supabase** | Base de données PostgreSQL | Gratuit (500MB) |
+| **Neon** | Base de données PostgreSQL | Gratuit (500MB) |
 | **Brevo** | Envoi d'emails | Gratuit (300 emails/jour) |
 | **GitHub** | Versioning + CI/CD | Gratuit |
 
@@ -892,21 +893,20 @@ Créer un fichier `.env` à la racine du projet :
 
 ```env
 # Base de données
-DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT].supabase.co:5432/postgres
+DATABASE_URL=postgresql://neondb_owner:npg_n9yAX4GoaQOU@ep-noisy-fire-aibo4zsf-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 
 # Authentification
-JWT_SECRET=votre_cle_secrete_tres_longue_minimum_32_caracteres
+JWT_SECRET=un_secret_long
 
 # Brevo (Emailing)
-BREVO_API_KEY=xkeysib-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
-BREVO_SENDER_EMAIL=noreply@votredomaine.com
-BREVO_SENDER_NAME=FormaPro CRM
+BREVO_API_KEY=xkeysib-98..........
+BREVO_SENDER_EMAIL=kenzamenad6@gmail.com
+BREVO_SENDER_NAME="FormaPro CRM"
 
 # Frontend
 NEXT_PUBLIC_API_URL=http://localhost:3000
-# En production : NEXT_PUBLIC_API_URL=https://votre-backend.vercel.app
+# En production : NEXT_PUBLIC_API_URL=https://formaprocrmbackend.vercel.app
 ```
-
 ---
 
 ## 📁 Structure du projet
@@ -967,7 +967,7 @@ formaprocrm/
 | **Protection routes** | requireAuth | Vérifie le token à chaque requête |
 | **Protection admin** | requireAdmin | Vérifie le rôle `admin` dans le token |
 | **Variables sensibles** | .env + Vercel | Jamais committées dans le code |
-| **Connexion DB** | SSL obligatoire | Connexion chiffrée via Supabase |
+| **Connexion DB** | SSL obligatoire | Connexion chiffrée via Neon |
 | **CORS** | Configuré Express | Origines autorisées uniquement |
 
 ---
@@ -997,7 +997,7 @@ formaprocrm/
 ### Compétences développées
 
 - Conception et déploiement d'une application **Full Stack SaaS** complète
-- Intégration de **services cloud** (Supabase, Brevo, Vercel)
+- Intégration de **services cloud** (Neon, Brevo, Vercel)
 - Développement **frontend moderne** avec Next.js 14, React, TypeScript, Tailwind CSS
 - Développement **API REST** avec Node.js et Express
 - Gestion d'une **base de données PostgreSQL** relationnelle en cloud
