@@ -1,77 +1,234 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const API = process.env.NEXT_PUBLIC_API_URL!;
 
-/* ─────────────────────────── Types ─────────────────────────── */
 type DealStatus = "prospect" | "qualification" | "proposition" | "negociation" | "gagne" | "perdu";
 
-type StageData = {
+type Deal = {
+  id: string;
+  title: string;
+  description: string | null;
   status: DealStatus;
-  count: number;
-  total: number;
+  amount: number;
+  probability: number;
+  expected_close_date: string | null;
+  contact_id: string | null;
+  company_id: string | null;
+  assigned_to: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  company_name?: string | null;
+  assigned_first_name?: string | null;
+  assigned_last_name?: string | null;
+  updated_at: string;
 };
 
-type Stats = {
-  summary: {
-    total_deals: number;
-    total_value: number;
-    weighted_value: number;
-    won_value: number;
-    active_deals: number;
-  };
-  by_status: StageData[];
+type DealForm = {
+  title: string;
+  description: string;
+  status: DealStatus;
+  amount: string;
+  expected_close_date: string;
 };
 
-/* ─────────────────────────── Constants ─────────────────────────── */
-const PIPELINE_STAGES: DealStatus[] = [
-  "prospect", "qualification", "proposition", "negociation", "gagne",
+const STAGES: { status: DealStatus; label: string; color: string }[] = [
+  { status: "prospect",      label: "Prospect",      color: "#64748b" },
+  { status: "qualification", label: "Qualification", color: "#f59e0b" },
+  { status: "proposition",   label: "Proposition",   color: "#3b82f6" },
+  { status: "negociation",   label: "Négociation",   color: "#8b5cf6" },
+  { status: "gagne",         label: "Gagné ✓",       color: "#10b981" },
+  { status: "perdu",         label: "Perdu",         color: "#ef4444" },
 ];
 
-const STAGE_LABELS: Record<DealStatus, string> = {
-  prospect: "Prospect",
-  qualification: "Qualification",
-  proposition: "Proposition",
-  negociation: "Négociation",
-  gagne: "Gagné",
-  perdu: "Perdu",
+const STATUS_COLORS: Record<DealStatus, string> = {
+  prospect:      "bg-slate-100 text-slate-700",
+  qualification: "bg-amber-100 text-amber-700",
+  proposition:   "bg-blue-100 text-blue-700",
+  negociation:   "bg-purple-100 text-purple-700",
+  gagne:         "bg-emerald-100 text-emerald-700",
+  perdu:         "bg-rose-100 text-rose-700",
 };
 
-const STAGE_COLORS: Record<DealStatus, { bg: string; text: string; border: string; funnel: string }> = {
-  prospect:      { bg: "bg-slate-100",   text: "text-slate-700",   border: "border-slate-300",   funnel: "#94a3b8" },
-  qualification: { bg: "bg-amber-100",   text: "text-amber-700",   border: "border-amber-300",   funnel: "#fbbf24" },
-  proposition:   { bg: "bg-blue-100",    text: "text-blue-700",    border: "border-blue-300",    funnel: "#60a5fa" },
-  negociation:   { bg: "bg-purple-100",  text: "text-purple-700",  border: "border-purple-300",  funnel: "#a78bfa" },
-  gagne:         { bg: "bg-emerald-100", text: "text-emerald-700", border: "border-emerald-300", funnel: "#34d399" },
-  perdu:         { bg: "bg-rose-100",    text: "text-rose-700",    border: "border-rose-300",    funnel: "#f87171" },
+const EMPTY_FORM: DealForm = {
+  title: "", description: "", status: "prospect", amount: "", expected_close_date: "",
 };
 
-const STAGE_ICONS: Record<DealStatus, string> = {
-  prospect: "🎯",
-  qualification: "🔍",
-  proposition: "📄",
-  negociation: "🤝",
-  gagne: "🏆",
-  perdu: "❌",
-};
+function fmt(n: number) {
+  return new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 0 }).format(Math.round(n));
+}
 
-/* ─────────────────────────── Helpers ─────────────────────────── */
-function classNames(...xs: Array<string | false | undefined | null>) {
+function daysAgo(dateStr: string) {
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000);
+}
+
+function cx(...xs: Array<string | false | undefined | null>) {
   return xs.filter(Boolean).join(" ");
 }
 
-function fmt(n: number) {
-  return new Intl.NumberFormat("fr-FR").format(Math.round(n));
+function dealToForm(deal: Deal): DealForm {
+  return {
+    title: deal.title,
+    description: deal.description ?? "",
+    status: deal.status,
+    amount: deal.amount ? String(deal.amount) : "",
+    expected_close_date: deal.expected_close_date ? deal.expected_close_date.slice(0, 10) : "",
+  };
 }
 
-function conversionRate(from: number, to: number) {
-  if (from === 0) return 0;
-  return Math.round((to / from) * 100);
+// ─── Modal partagé création / édition ────────────────────────────────────────
+function DealModal({
+  mode, form, setForm, onSave, onDelete, onClose, saving, deleting, error,
+}: {
+  mode: "create" | "edit";
+  form: DealForm;
+  setForm: (f: DealForm) => void;
+  onSave: () => void;
+  onDelete?: () => void;
+  onClose: () => void;
+  saving: boolean;
+  deleting: boolean;
+  error: string;
+}) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">
+              {mode === "create" ? "Nouveau deal" : "Modifier le deal"}
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {mode === "create" ? "Remplissez les informations ci-dessous" : "Modifiez les informations du deal"}
+            </p>
+          </div>
+          <button onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors text-lg font-bold">
+            ✕
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              Titre <span className="text-rose-500">*</span>
+            </label>
+            <input
+              autoFocus
+              value={form.title}
+              onChange={e => setForm({ ...form, title: e.target.value })}
+              onKeyDown={e => e.key === "Enter" && onSave()}
+              placeholder="Ex : Formation SEO Premium"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1.5">Statut</label>
+              <select
+                value={form.status}
+                onChange={e => setForm({ ...form, status: e.target.value as DealStatus })}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all bg-white">
+                {STAGES.map(s => <option key={s.status} value={s.status}>{s.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1.5">Montant (€)</label>
+              <input
+                type="number" min="0"
+                value={form.amount}
+                onChange={e => setForm({ ...form, amount: e.target.value })}
+                placeholder="0"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">Date de clôture prévue</label>
+            <input
+              type="date"
+              value={form.expected_close_date}
+              onChange={e => setForm({ ...form, expected_close_date: e.target.value })}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">Description</label>
+            <textarea
+              value={form.description}
+              onChange={e => setForm({ ...form, description: e.target.value })}
+              placeholder="Notes, contexte, remarques..."
+              rows={3}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all resize-none"
+            />
+          </div>
+
+          {error && (
+            <div className="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2.5 text-sm text-rose-600">
+              ⚠️ {error}
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          {mode === "edit" && onDelete && (
+            confirmDelete ? (
+              <div className="flex gap-2 flex-1">
+                <button onClick={() => setConfirmDelete(false)}
+                  className="flex-1 rounded-xl border border-slate-200 px-3 py-2.5 text-xs text-slate-500 hover:bg-slate-50 transition-colors">
+                  Annuler
+                </button>
+                <button onClick={onDelete} disabled={deleting}
+                  className="flex-1 rounded-xl bg-rose-500 px-3 py-2.5 text-xs font-medium text-white hover:bg-rose-600 disabled:opacity-50 transition-colors">
+                  {deleting ? "Suppression..." : "✓ Confirmer"}
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmDelete(true)}
+                className="rounded-xl border border-rose-200 px-3 py-2.5 text-sm text-rose-500 hover:bg-rose-50 transition-colors">
+                🗑 Supprimer
+              </button>
+            )
+          )}
+
+          {!confirmDelete && (
+            <>
+              <button onClick={onClose}
+                className="flex-1 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                Annuler
+              </button>
+              <button onClick={onSave} disabled={saving || !form.title.trim()}
+                className="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                {saving ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                    </svg>
+                    {mode === "create" ? "Création..." : "Sauvegarde..."}
+                  </span>
+                ) : mode === "create" ? "Créer le deal" : "Sauvegarder"}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
-/* ═══════════════════════════ Page ═══════════════════════════ */
+// ─── Page principale ──────────────────────────────────────────────────────────
 export default function PipelinePage() {
   const router = useRouter();
 
@@ -80,9 +237,19 @@ export default function PipelinePage() {
     return localStorage.getItem("token");
   }, []);
 
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<"kanban" | "list">("kanban");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [dragOverStatus, setDragOverStatus] = useState<DealStatus | null>(null);
+  const draggedId = useRef<string | null>(null);
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [editDeal, setEditDeal] = useState<Deal | null>(null);
+  const [form, setForm] = useState<DealForm>(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [formError, setFormError] = useState("");
 
   function getToken() {
     const t = localStorage.getItem("token");
@@ -90,388 +257,514 @@ export default function PipelinePage() {
     return t;
   }
 
-  async function loadStats() {
-    setError(null); setLoading(true);
+  async function loadDeals() {
+    setLoading(true);
     const t = getToken(); if (!t) return;
     try {
-      const res = await fetch(`${API}/deals/stats`, {
-        headers: { Authorization: `Bearer ${t}` },
-      });
-      const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.error || `Erreur ${res.status}`);
-      setStats(data);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
+      const res = await fetch(`${API}/deals`, { headers: { Authorization: `Bearer ${t}` } });
+      if (res.ok) setDeals(await res.json());
+    } catch { /* silent */ }
+    finally { setLoading(false); }
   }
 
   useEffect(() => {
     if (!token) { router.push("/login"); return; }
-    loadStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadDeals();
   }, [router]);
 
-  /* ── Build stage map ── */
-  const stageMap = useMemo(() => {
-    const m: Record<string, StageData> = {};
-    stats?.by_status.forEach(s => { m[s.status] = s; });
-    return m;
-  }, [stats]);
+  function openCreate() {
+    setForm(EMPTY_FORM);
+    setFormError("");
+    setShowCreate(true);
+  }
 
-  /* ── Max count for funnel width scaling ── */
-  const maxCount = useMemo(() => {
-    return Math.max(1, ...PIPELINE_STAGES.map(s => stageMap[s]?.count ?? 0));
-  }, [stageMap]);
+  function openEdit(deal: Deal) {
+    setEditDeal(deal);
+    setForm(dealToForm(deal));
+    setFormError("");
+  }
 
-  const totalProspects = stageMap["prospect"]?.count ?? 0;
-  const totalGagne = stageMap["gagne"]?.count ?? 0;
-  const globalConversion = conversionRate(totalProspects, totalGagne);
+  async function createDeal() {
+    if (!form.title.trim()) { setFormError("Le titre est requis."); return; }
+    setFormError("");
+    setSaving(true);
+    const t = getToken(); if (!t) return;
+    try {
+      const res = await fetch(`${API}/deals`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` },
+        body: JSON.stringify({
+          title: form.title.trim(),
+          description: form.description.trim() || null,
+          status: form.status,
+          amount: Number(form.amount) || 0,
+          expected_close_date: form.expected_close_date || null,
+        }),
+      });
+      if (res.ok) { setShowCreate(false); loadDeals(); }
+      else { const e = await res.json(); setFormError(e.error || "Erreur lors de la création."); }
+    } catch { setFormError("Erreur réseau."); }
+    finally { setSaving(false); }
+  }
 
-  /* ═══════════════════════════ Render ═══════════════════════════ */
+  async function updateDeal() {
+    if (!editDeal) return;
+    if (!form.title.trim()) { setFormError("Le titre est requis."); return; }
+    setFormError("");
+    setSaving(true);
+    const t = getToken(); if (!t) return;
+    try {
+      const res = await fetch(`${API}/deals/${editDeal.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` },
+        body: JSON.stringify({
+          title: form.title.trim(),
+          description: form.description.trim() || null,
+          status: form.status,
+          amount: Number(form.amount) || 0,
+          expected_close_date: form.expected_close_date || null,
+        }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setDeals(prev => prev.map(d => d.id === updated.id ? { ...d, ...updated } : d));
+        setEditDeal(null);
+      } else {
+        const e = await res.json();
+        setFormError(e.error || "Erreur lors de la modification.");
+      }
+    } catch { setFormError("Erreur réseau."); }
+    finally { setSaving(false); }
+  }
+
+  async function deleteDeal() {
+    if (!editDeal) return;
+    setDeleting(true);
+    const t = getToken(); if (!t) return;
+    try {
+      const res = await fetch(`${API}/deals/${editDeal.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${t}` },
+      });
+      if (res.ok) {
+        setDeals(prev => prev.filter(d => d.id !== editDeal.id));
+        setEditDeal(null);
+      } else { setFormError("Erreur lors de la suppression."); }
+    } catch { setFormError("Erreur réseau."); }
+    finally { setDeleting(false); }
+  }
+
+  function handleDragStart(e: React.DragEvent, dealId: string) {
+    draggedId.current = dealId;
+    e.dataTransfer.effectAllowed = "move";
+  }
+
+  function handleDragOver(e: React.DragEvent, status: DealStatus) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverStatus(status);
+  }
+
+  function handleDragLeave() { setDragOverStatus(null); }
+
+  async function handleDrop(e: React.DragEvent, status: DealStatus) {
+    e.preventDefault();
+    setDragOverStatus(null);
+    const id = draggedId.current;
+    if (!id) return;
+    const deal = deals.find(d => d.id === id);
+    if (!deal || deal.status === status) return;
+    setDeals(prev => prev.map(d => d.id === id ? { ...d, status } : d));
+    const t = getToken(); if (!t) return;
+    try {
+      const res = await fetch(`${API}/deals/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) setDeals(prev => prev.map(d => d.id === id ? { ...d, status: deal.status } : d));
+    } catch {
+      setDeals(prev => prev.map(d => d.id === id ? { ...d, status: deal.status } : d));
+    }
+    draggedId.current = null;
+  }
+
+  async function onStatusChange(id: string, status: DealStatus) {
+    const deal = deals.find(d => d.id === id);
+    if (!deal) return;
+    setDeals(prev => prev.map(d => d.id === id ? { ...d, status } : d));
+    const t = getToken(); if (!t) return;
+    try {
+      const res = await fetch(`${API}/deals/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) setDeals(prev => prev.map(d => d.id === id ? { ...d, status: deal.status } : d));
+    } catch {
+      setDeals(prev => prev.map(d => d.id === id ? { ...d, status: deal.status } : d));
+    }
+  }
+
+  const filtered = useMemo(() =>
+    filterStatus === "all" ? deals : deals.filter(d => d.status === filterStatus),
+  [deals, filterStatus]);
+
+  const grouped = useMemo(() => {
+    const g: Record<DealStatus, Deal[]> = {
+      prospect: [], qualification: [], proposition: [],
+      negociation: [], gagne: [], perdu: [],
+    };
+    deals.forEach(d => g[d.status]?.push(d));
+    return g;
+  }, [deals]);
+
+  const totalPipeline = useMemo(() =>
+    deals.filter(d => !["gagne", "perdu"].includes(d.status)).reduce((s, d) => s + Number(d.amount || 0), 0),
+  [deals]);
+
+  const totalWon = useMemo(() =>
+    deals.filter(d => d.status === "gagne").reduce((s, d) => s + Number(d.amount || 0), 0),
+  [deals]);
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="flex">
 
-        {/* ── Sidebar ── */}
+        {/* Sidebar */}
         <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-64 md:flex-col md:border-r md:border-slate-300 md:bg-white">
           <div className="flex items-center gap-3 px-5 py-4">
-            <div className="h-9 w-9 rounded-xl bg-emerald-600" />
+            <div className="h-9 w-9 rounded-xl bg-emerald-600 flex items-center justify-center">
+              <span className="text-white font-bold text-sm">F</span>
+            </div>
             <div>
               <div className="text-sm font-semibold">FormaPro CRM</div>
-              <div className="text-xs text-slate-500">Marketing Digital</div>
+              <div className="text-xs text-slate-500">Agence de Formation</div>
             </div>
           </div>
-
           <div className="flex-1 px-3 pb-3 pt-6">
-            <nav className="text-sm">
-              <SidebarItem label="Dashboard"   onClick={() => router.push("/dashboard")} />
-              <SidebarItem label="Contacts"    onClick={() => router.push("/contacts")} />
-              <SidebarItem label="Entreprises" onClick={() => router.push("/entreprises")} />
-              <SidebarItem label="Leads"       onClick={() => router.push("/leads")} />
-              <SidebarItem label="Deals"       onClick={() => router.push("/deals")} />
-              <SidebarItem active label="Pipeline" onClick={() => router.push("/pipeline")} />
-              <SidebarItem label="Tâches"      onClick={() => router.push("/tasks")} />
-              <div className="mt-4 border-t border-slate-300 pt-4">
-                <SidebarItem label="Paramètres" onClick={() => router.push("/settings")} />
+            <nav className="text-sm space-y-0.5">
+              {[
+                { label: "Dashboard",   path: "/dashboard",   icon: "📊" },
+                { label: "Contacts",    path: "/contacts",    icon: "👤" },
+                { label: "Entreprises", path: "/entreprises", icon: "🏢" },
+                { label: "Leads",       path: "/leads",       icon: "🎯" },
+                { label: "Deals",       path: "/deals",       icon: "💼" },
+                { label: "Tâches",      path: "/tasks",       icon: "✅" },
+              ].map(item => (
+                <button key={item.path} onClick={() => router.push(item.path)}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-slate-600 hover:bg-slate-50">
+                  <span>{item.icon}</span><span>{item.label}</span>
+                </button>
+              ))}
+              <div className="pt-3 mt-3 border-t border-slate-100">
+                <button onClick={() => router.push("/pipeline")}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left bg-emerald-50 text-emerald-700 font-medium">
+                  <span>📈</span><span>Pipeline</span>
+                </button>
+                <button onClick={() => router.push("/settings")}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-slate-600 hover:bg-slate-50 mt-0.5">
+                  <span>⚙️</span><span>Paramètres</span>
+                </button>
               </div>
             </nav>
           </div>
-
-          <div className="p-4">
-            <div className="rounded-2xl bg-emerald-50 p-4">
-              <div className="text-sm font-semibold">Besoin d'aide ?</div>
-              <div className="mt-1 text-xs text-slate-600">Consultez notre guide d'utilisation</div>
-              <button className="mt-3 w-full rounded-xl bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700">
-                Voir le guide
-              </button>
-            </div>
-          </div>
         </aside>
 
-        {/* ── Main ── */}
-        <main className="flex-1 min-w-0">
-
-          {/* Header */}
+        {/* Main */}
+        <main className="flex-1 min-w-0 flex flex-col">
           <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur">
-            <div className="mx-auto max-w-6xl px-4 py-4">
-              <div className="flex items-start justify-between gap-3">
+            <div className="px-6 py-4">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-xl font-semibold">Pipeline & Funnel</h1>
-                  <p className="text-sm text-slate-500">Visualisation du cycle de vente et taux de conversion</p>
+                  <h1 className="text-xl font-semibold text-slate-900">📈 Pipeline</h1>
+                  <p className="text-sm text-slate-500">Suivez et déplacez vos deals</p>
                 </div>
-                <button
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                  onClick={loadStats}
-                  title="Rafraîchir"
-                >⟳</button>
+                <div className="hidden md:flex items-center gap-6 text-sm">
+                  <div className="text-center">
+                    <div className="font-bold text-slate-900">{fmt(totalPipeline)} €</div>
+                    <div className="text-xs text-slate-400">Pipeline actif</div>
+                  </div>
+                  <div className="w-px h-8 bg-slate-200" />
+                  <div className="text-center">
+                    <div className="font-bold text-emerald-600">{fmt(totalWon)} €</div>
+                    <div className="text-xs text-slate-400">Deals gagnés</div>
+                  </div>
+                  <div className="w-px h-8 bg-slate-200" />
+                  <div className="text-center">
+                    <div className="font-bold text-slate-900">{deals.length}</div>
+                    <div className="text-xs text-slate-400">Total deals</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={openCreate}
+                    className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+                    + Nouveau deal
+                  </button>
+                  <button onClick={loadDeals}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50"
+                    title="Rafraîchir">⟳</button>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center gap-3">
+                {view === "list" && (
+                  <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none">
+                    <option value="all">Toutes les étapes</option>
+                    {STAGES.map(s => <option key={s.status} value={s.status}>{s.label}</option>)}
+                  </select>
+                )}
+                <div className="flex rounded-xl border border-slate-200 bg-white overflow-hidden ml-auto">
+                  <button onClick={() => setView("kanban")}
+                    className={cx("px-4 py-2 text-sm font-medium transition-colors",
+                      view === "kanban" ? "bg-emerald-600 text-white" : "text-slate-600 hover:bg-slate-50")}>
+                    ⬛ Kanban
+                  </button>
+                  <button onClick={() => setView("list")}
+                    className={cx("px-4 py-2 text-sm font-medium border-l border-slate-200 transition-colors",
+                      view === "list" ? "bg-emerald-600 text-white" : "text-slate-600 hover:bg-slate-50")}>
+                    ≡ Liste
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="mx-auto max-w-6xl px-4 py-6 space-y-6">
-
-            {/* Error */}
-            {error && (
-              <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
-                {error}
-              </div>
-            )}
-
+          <div className="flex-1 p-6 overflow-x-auto">
             {loading ? (
-              <SkeletonPipeline />
-            ) : !stats ? null : (
-              <>
-                {/* ── KPI Cards ── */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <KpiCard
-                    label="Total pipeline"
-                    value={`${fmt(stats.summary.total_value)} €`}
-                    sub={`${stats.summary.total_deals} deals`}
-                    icon="💼"
-                  />
-                  <KpiCard
-                    label="Valeur pondérée"
-                    value={`${fmt(stats.summary.weighted_value)} €`}
-                    sub="Selon probabilités"
-                    icon="%"
-                  />
-                  <KpiCard
-                    label="CA gagné"
-                    value={`${fmt(stats.summary.won_value)} €`}
-                    sub={`${stageMap["gagne"]?.count ?? 0} deals gagnés`}
-                    icon="🏆"
-                  />
-                  <KpiCard
-                    label="Taux de conversion"
-                    value={`${globalConversion}%`}
-                    sub="Prospect → Gagné"
-                    icon="📈"
-                    highlight={globalConversion > 20}
-                  />
-                </div>
+              view === "kanban" ? <SkeletonKanban /> : <SkeletonList />
+            ) : view === "kanban" ? (
 
-                {/* ── Funnel ── */}
-                <div className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <h2 className="text-base font-semibold mb-6">Funnel de conversion</h2>
-
-                  <div className="flex flex-col items-center gap-0">
-                    {PIPELINE_STAGES.map((status, idx) => {
-                      const stage = stageMap[status];
-                      const count = stage?.count ?? 0;
-                      const total = stage?.total ?? 0;
-                      const color = STAGE_COLORS[status];
-
-                      // Width: de 100% pour prospect jusqu'à ~30% pour gagné
-                      const widthPct = maxCount === 0 ? 30 : Math.max(20, Math.round((count / maxCount) * 100));
-
-                      // Taux de conversion vers l'étape suivante
-                      const nextStatus = PIPELINE_STAGES[idx + 1];
-                      const nextCount = nextStatus ? (stageMap[nextStatus]?.count ?? 0) : null;
-                      const rate = nextCount !== null ? conversionRate(count, nextCount) : null;
-
-                      return (
-                        <div key={status} className="w-full flex flex-col items-center">
-                          {/* Barre du funnel */}
-                          <div
-                            className="flex items-center justify-between rounded-xl px-5 py-3 transition-all duration-500"
-                            style={{
-                              width: `${widthPct}%`,
-                              backgroundColor: color.funnel + "33",
-                              borderLeft: `4px solid ${color.funnel}`,
-                              minWidth: "280px",
-                            }}
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-xl">{STAGE_ICONS[status]}</span>
-                              <div>
-                                <div className="font-semibold text-sm text-slate-800">{STAGE_LABELS[status]}</div>
-                                <div className="text-xs text-slate-500">{fmt(total)} €</div>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div
-                                className="text-2xl font-bold"
-                                style={{ color: color.funnel }}
-                              >{count}</div>
-                              <div className="text-xs text-slate-500">deal{count > 1 ? "s" : ""}</div>
-                            </div>
-                          </div>
-
-                          {/* Flèche + taux entre étapes */}
-                          {rate !== null && (
-                            <div className="flex flex-col items-center my-1">
-                              <div className="text-xs text-slate-400 font-medium">{rate}%</div>
-                              <div className="text-slate-300 text-lg leading-none">↓</div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-
-                    {/* Perdu en dehors du funnel */}
-                    {stageMap["perdu"] && (
-                      <div className="mt-4 w-full flex justify-center">
-                        <div
-                          className="flex items-center gap-3 rounded-xl px-5 py-3 border border-dashed border-rose-200 bg-rose-50"
-                          style={{ minWidth: "280px" }}
-                        >
-                          <span className="text-xl">❌</span>
-                          <div className="flex-1">
-                            <div className="font-semibold text-sm text-rose-700">Perdus</div>
-                            <div className="text-xs text-rose-400">{fmt(stageMap["perdu"].total)} €</div>
-                          </div>
-                          <div className="text-2xl font-bold text-rose-400">{stageMap["perdu"].count}</div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* ── Tableau détaillé par étape ── */}
-                <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-                  <div className="px-6 py-4 border-b border-slate-200">
-                    <h2 className="text-base font-semibold">Détail par étape</h2>
-                  </div>
-
-                  <div className="grid grid-cols-6 gap-2 bg-slate-50 px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide border-b border-slate-200">
-                    <div className="col-span-2">Étape</div>
-                    <div className="text-right">Deals</div>
-                    <div className="text-right">Montant total</div>
-                    <div className="text-right">Probabilité</div>
-                    <div className="text-right">Conversion suiv.</div>
-                  </div>
-
-                  {PIPELINE_STAGES.map((status, idx) => {
-                    const stage = stageMap[status];
-                    const count = stage?.count ?? 0;
-                    const total = stage?.total ?? 0;
-                    const color = STAGE_COLORS[status];
-                    const nextStatus = PIPELINE_STAGES[idx + 1];
-                    const nextCount = nextStatus ? (stageMap[nextStatus]?.count ?? 0) : null;
-                    const rate = nextCount !== null ? conversionRate(count, nextCount) : null;
-
-                    const probabilities: Record<DealStatus, number> = {
-                      prospect: 10, qualification: 30, proposition: 55,
-                      negociation: 75, gagne: 100, perdu: 0,
-                    };
-
-                    return (
-                      <div key={status} className="grid grid-cols-6 gap-2 px-6 py-3 border-b border-slate-100 last:border-0 items-center hover:bg-slate-50">
-                        <div className="col-span-2 flex items-center gap-2">
-                          <span>{STAGE_ICONS[status]}</span>
-                          <span className={classNames("rounded-lg px-2 py-1 text-xs font-medium", color.bg, color.text)}>
-                            {STAGE_LABELS[status]}
+              <div className="flex" style={{ minWidth: `${STAGES.length * 272}px` }}>
+                {STAGES.map((stage, index) => {
+                  const stageDeals = grouped[stage.status];
+                  const stageTotal = stageDeals.reduce((s, d) => s + Number(d.amount || 0), 0);
+                  const isDragOver = dragOverStatus === stage.status;
+                  return (
+                    <div key={stage.status} className="flex-shrink-0 w-64 flex flex-col px-3"
+                      style={{ borderLeft: index > 0 ? "1px solid #e2e8f0" : "none" }}>
+                      <div className="mb-3">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: stage.color }} />
+                          <span className="text-sm font-semibold text-slate-800 flex-1 truncate">{stage.label}</span>
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                            {stageDeals.length}
                           </span>
                         </div>
-                        <div className="text-right font-semibold text-slate-800">{count}</div>
-                        <div className="text-right text-slate-700">{fmt(total)} €</div>
-                        <div className="text-right">
-                          <span className="text-xs text-slate-500">{probabilities[status]}%</span>
-                        </div>
-                        <div className="text-right">
-                          {rate !== null ? (
-                            <span className={classNames(
-                              "text-xs font-medium rounded-lg px-2 py-1",
-                              rate >= 50 ? "bg-emerald-100 text-emerald-700" :
-                              rate >= 25 ? "bg-amber-100 text-amber-700" :
-                              "bg-rose-100 text-rose-700"
-                            )}>
-                              {rate}%
-                            </span>
-                          ) : (
-                            <span className="text-xs text-slate-400">—</span>
-                          )}
+                        <p className="text-xs text-slate-400 pl-5">{fmt(stageTotal)} €</p>
+                      </div>
+                      <div
+                        className="flex-1 space-y-2 min-h-48 rounded-2xl p-2 transition-all duration-150"
+                        style={{
+                          border: isDragOver ? `2px solid ${stage.color}` : "1px solid #e2e8f0",
+                          backgroundColor: isDragOver ? `${stage.color}12` : "#f8fafc",
+                        }}
+                        onDragOver={e => handleDragOver(e, stage.status)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={e => handleDrop(e, stage.status)}
+                      >
+                        {stageDeals.length === 0 ? (
+                          <div className="h-16 flex items-center justify-center text-xs text-slate-400">Déposez ici</div>
+                        ) : stageDeals.map(deal => (
+                          <KanbanCard key={deal.id} deal={deal} stageColor={stage.color}
+                            onDragStart={handleDragStart} onClick={() => openEdit(deal)} />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+            ) : (
+
+              <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+                <div className="grid grid-cols-12 gap-2 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  <div className="col-span-3">Deal</div>
+                  <div className="col-span-2">Entreprise</div>
+                  <div className="col-span-2">Étape</div>
+                  <div className="col-span-1 text-right">Montant</div>
+                  <div className="col-span-1">Probabilité</div>
+                  <div className="col-span-1">Commercial</div>
+                  <div className="col-span-1">Clôture</div>
+                  <div className="col-span-1 text-right">Actions</div>
+                </div>
+
+                {filtered.length === 0 ? (
+                  <div className="px-5 py-12 text-center text-sm text-slate-400">Aucun deal pour cette étape</div>
+                ) : filtered.map(deal => {
+                  const stage = STAGES.find(s => s.status === deal.status)!;
+                  return (
+                    <div key={deal.id}
+                      className="grid grid-cols-12 gap-2 px-5 py-3.5 border-b border-slate-100 last:border-0 items-center hover:bg-slate-50 transition-colors">
+                      <div className="col-span-3">
+                        <div className="text-sm font-medium text-slate-900 truncate">{deal.title}</div>
+                        {deal.description && <div className="text-xs text-slate-400 truncate">{deal.description}</div>}
+                      </div>
+                      <div className="col-span-2 text-xs text-slate-500 truncate">{deal.company_name || "—"}</div>
+                      <div className="col-span-2">
+                        <select value={deal.status} onChange={e => onStatusChange(deal.id, e.target.value as DealStatus)}
+                          className={cx("rounded-lg px-2 py-1 text-xs font-medium border-0 outline-none cursor-pointer w-full", STATUS_COLORS[deal.status])}>
+                          {STAGES.map(s => <option key={s.status} value={s.status}>{s.label}</option>)}
+                        </select>
+                      </div>
+                      <div className="col-span-1 text-right text-sm font-semibold text-slate-800">
+                        {fmt(Number(deal.amount || 0))} €
+                      </div>
+                      <div className="col-span-1">
+                        <div className="flex items-center gap-1">
+                          <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                            <div className="h-full rounded-full transition-all"
+                              style={{ width: `${deal.probability}%`, backgroundColor: stage.color }} />
+                          </div>
+                          <span className="text-xs text-slate-400 w-7 text-right">{deal.probability}%</span>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-
-                {/* ── Répartition visuelle ── */}
-                <div className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <h2 className="text-base font-semibold mb-4">Répartition du pipeline</h2>
-                  <div className="space-y-3">
-                    {[...PIPELINE_STAGES, "perdu" as DealStatus].map(status => {
-                      const stage = stageMap[status];
-                      const count = stage?.count ?? 0;
-                      const pct = stats.summary.total_deals > 0
-                        ? Math.round((count / stats.summary.total_deals) * 100)
-                        : 0;
-                      const color = STAGE_COLORS[status];
-
-                      return (
-                        <div key={status} className="flex items-center gap-3">
-                          <div className="w-28 text-xs text-slate-600 text-right">{STAGE_LABELS[status]}</div>
-                          <div className="flex-1 h-6 rounded-full bg-slate-100 overflow-hidden">
-                            <div
-                              className="h-full rounded-full transition-all duration-700 flex items-center justify-end pr-2"
-                              style={{
-                                width: `${pct}%`,
-                                backgroundColor: color.funnel,
-                                minWidth: pct > 0 ? "2rem" : "0",
-                              }}
-                            >
-                              {pct > 5 && <span className="text-xs text-white font-medium">{pct}%</span>}
+                      <div className="col-span-1">
+                        {deal.assigned_first_name ? (
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
+                              style={{ backgroundColor: stage.color }}>
+                              {deal.assigned_first_name[0]}
                             </div>
+                            <span className="text-xs text-slate-500 truncate">{deal.assigned_first_name}</span>
                           </div>
-                          <div className="w-16 text-xs text-slate-500 text-right">{count} deal{count > 1 ? "s" : ""}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                        ) : <span className="text-xs text-slate-300">—</span>}
+                      </div>
+                      <div className="col-span-1 text-xs text-slate-400">
+                        {deal.expected_close_date ? new Date(deal.expected_close_date).toLocaleDateString("fr-FR") : "—"}
+                      </div>
+                      <div className="col-span-1 text-right">
+                        <button onClick={() => openEdit(deal)}
+                          className="rounded-lg px-2 py-1 text-xs text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                          title="Modifier">✏️</button>
+                      </div>
+                    </div>
+                  );
+                })}
 
-              </>
+                {filtered.length > 0 && (
+                  <div className="grid grid-cols-12 gap-2 px-5 py-3 bg-slate-50 border-t border-slate-200 text-xs font-semibold text-slate-600">
+                    <div className="col-span-3">{filtered.length} deal{filtered.length > 1 ? "s" : ""}</div>
+                    <div className="col-span-6" />
+                    <div className="col-span-1 text-right">
+                      {fmt(filtered.reduce((s, d) => s + Number(d.amount || 0), 0))} €
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </main>
       </div>
-    </div>
-  );
-}
 
-/* ══════════════ Sub-components ══════════════ */
-
-function SidebarItem({ label, active, onClick }: { label: string; active?: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className={classNames(
-        "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left hover:bg-slate-50",
-        active && "bg-slate-100 text-slate-900"
+      {/* Modal création */}
+      {showCreate && (
+        <DealModal mode="create" form={form} setForm={setForm}
+          onSave={createDeal} onClose={() => setShowCreate(false)}
+          saving={saving} deleting={false} error={formError} />
       )}
-    >
-      <span className={classNames("h-2 w-2 rounded-full", active ? "bg-emerald-600" : "bg-slate-300")} />
-      <span>{label}</span>
-    </button>
-  );
-}
 
-function KpiCard({ label, value, sub, icon, highlight }: {
-  label: string; value: string; sub: string; icon: string; highlight?: boolean;
-}) {
-  return (
-    <div className={classNames(
-      "rounded-2xl border p-4",
-      highlight ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"
-    )}>
-      <div className="flex items-center gap-2 mb-2">
-        <span>{icon}</span>
-        <span className="text-xs text-slate-500">{label}</span>
-      </div>
-      <div className={classNames("text-xl font-bold", highlight ? "text-emerald-700" : "text-slate-900")}>
-        {value}
-      </div>
-      <div className="text-xs text-slate-400 mt-0.5">{sub}</div>
+      {/* Modal édition */}
+      {editDeal && (
+        <DealModal mode="edit" form={form} setForm={setForm}
+          onSave={updateDeal} onDelete={deleteDeal} onClose={() => setEditDeal(null)}
+          saving={saving} deleting={deleting} error={formError} />
+      )}
     </div>
   );
 }
 
-function SkeletonPipeline() {
+// ─── Kanban Card ──────────────────────────────────────────────────────────────
+function KanbanCard({ deal, stageColor, onDragStart, onClick }: {
+  deal: Deal;
+  stageColor: string;
+  onDragStart: (e: React.DragEvent, id: string) => void;
+  onClick: () => void;
+}) {
+  const days = daysAgo(deal.updated_at);
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-2xl border border-slate-200 bg-white p-4">
-            <div className="h-3 w-24 animate-pulse rounded bg-slate-200 mb-3" />
-            <div className="h-6 w-32 animate-pulse rounded bg-slate-200" />
+    <div
+      draggable
+      onDragStart={e => onDragStart(e, deal.id)}
+      onClick={onClick}
+      className="bg-white rounded-xl border border-slate-200 p-3 cursor-pointer hover:border-slate-300 hover:shadow-sm transition-all select-none group"
+    >
+      <div className="flex items-start justify-between gap-2 mb-1.5">
+        <p className="text-xs font-semibold text-slate-800 leading-tight flex-1 line-clamp-2">{deal.title}</p>
+        <div className="flex items-center gap-1 shrink-0">
+          <span className="text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">✏️</span>
+          <div className="flex items-center gap-0.5 text-slate-400">
+            <span className="text-[10px]">🕐</span>
+            <span className="text-[10px] font-mono">{days}j</span>
           </div>
-        ))}
-      </div>
-      <div className="rounded-2xl border border-slate-200 bg-white p-6">
-        <div className="h-5 w-40 animate-pulse rounded bg-slate-200 mb-6" />
-        <div className="flex flex-col items-center gap-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="animate-pulse rounded-xl bg-slate-100"
-              style={{ width: `${100 - i * 12}%`, height: "56px", minWidth: "280px" }}
-            />
-          ))}
         </div>
       </div>
+
+      {deal.company_name && (
+        <p className="text-[10px] text-slate-400 mb-2 truncate">🏢 {deal.company_name}</p>
+      )}
+
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-bold text-slate-800">{fmt(Number(deal.amount || 0))} €</span>
+        <div className="flex items-center gap-1.5">
+          {deal.assigned_first_name && (
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"
+              style={{ backgroundColor: stageColor }}>
+              {deal.assigned_first_name[0]}
+            </div>
+          )}
+          <span className="text-[10px] text-slate-400 font-mono">{deal.probability}%</span>
+        </div>
+      </div>
+
+      <div className="h-1 rounded-full bg-slate-100 overflow-hidden">
+        <div className="h-full rounded-full transition-all"
+          style={{ width: `${deal.probability}%`, backgroundColor: stageColor }} />
+      </div>
+
+      {deal.expected_close_date && (
+        <div className="mt-2 text-[10px] text-slate-400">
+          📅 {new Date(deal.expected_close_date).toLocaleDateString("fr-FR")}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Skeletons ────────────────────────────────────────────────────────────────
+function SkeletonKanban() {
+  return (
+    <div className="flex gap-4">
+      {STAGES.map(s => (
+        <div key={s.status} className="flex-shrink-0 w-64">
+          <div className="h-5 w-28 animate-pulse rounded bg-slate-200 mb-3" />
+          <div className="space-y-2 rounded-2xl border border-slate-200 p-2 min-h-48">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-xl border border-slate-200 p-3 space-y-2">
+                <div className="h-3 w-full animate-pulse rounded bg-slate-200" />
+                <div className="h-3 w-2/3 animate-pulse rounded bg-slate-100" />
+                <div className="h-1 w-full animate-pulse rounded bg-slate-100" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SkeletonList() {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+      <div className="border-b border-slate-200 bg-slate-50 px-5 py-3 h-10 animate-pulse" />
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="px-5 py-4 border-b border-slate-100 flex items-center gap-4">
+          <div className="h-4 w-48 animate-pulse rounded bg-slate-200" />
+          <div className="h-4 w-32 animate-pulse rounded bg-slate-100 ml-auto" />
+          <div className="h-4 w-20 animate-pulse rounded bg-slate-100" />
+        </div>
+      ))}
     </div>
   );
 }

@@ -125,7 +125,17 @@ export default function LoginPage() {
                   </button>
                 </div>
               </div>
-
+              <div className="flex justify-end">
+  <div className="flex justify-end">
+  <button
+    type="button"
+    onClick={() => router.push("/mot-de-passe-oublie")}
+    className="text-xs text-slate-400 hover:text-emerald-600 transition-colors"
+  >
+    Mot de passe oublié ?
+  </button>
+</div>
+</div>
               {error && (
                 <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
                   ⚠️ {error}

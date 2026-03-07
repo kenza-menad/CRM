@@ -172,10 +172,28 @@ async function sendOverdueTaskEmail({ email, first_name, task_title, due_at }) {
     `,
   });
 }
+async function sendPasswordResetEmail({ email, code }) {
+  await sendEmail({
+    to: email,
+    subject: "Votre code de réinitialisation 🔑",
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:32px">
+        <div style="background:#059669;padding:24px;border-radius:12px 12px 0 0;text-align:center">
+          <h2 style="color:white;margin:0">FormaPro CRM</h2>
+        </div>
+        <div style="background:#fff;padding:32px;border:1px solid #e2e8f0;border-radius:0 0 12px 12px">
+          <p>Voici votre code de réinitialisation :</p>
+          <div style="font-size:36px;font-weight:bold;letter-spacing:12px;color:#059669;
+                      background:#f0fdf4;border-radius:12px;padding:24px;text-align:center;margin:24px 0">
+            ${code}
+          </div>
+          <p style="color:#64748b;font-size:14px">Ce code expire dans <strong>15 minutes</strong>.</p>
+          <p style="color:#64748b;font-size:14px">Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
+        </div>
+      </div>
+    `,
+  });
+}
 
-module.exports = {
-  sendWelcomeEmail,
-  sendDealWonEmail,
-  sendNewLeadEmail,
-  sendOverdueTaskEmail,
-};
+module.exports = { sendWelcomeEmail, sendDealWonEmail, sendNewLeadEmail, sendOverdueTaskEmail, sendPasswordResetEmail };
+
