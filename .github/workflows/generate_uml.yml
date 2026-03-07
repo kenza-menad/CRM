@@ -10,13 +10,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Generate PlantUML diagram
-        uses: holowczak/plantuml-action@v1
         with:
-          input_file: doc/diagram_model.puml
-          output_dir: doc/
-          format: png
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Java & Graphviz
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y default-jre graphviz
+
+      - name: Download PlantUML jar
+        run: |
+          wget -q https://github.com/plantuml/plantuml/releases/download/v1.2024.3/plantuml-1.2024.3.jar -O /tmp/plantuml.jar
+
+      - name: Generate PNG from PUML
+        run: |
+          java -jar /tmp/plantuml.jar -tpng doc/diagram_model.puml -o ../doc/
 
       - name: Commit and push diagram
         run: |
