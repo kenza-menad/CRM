@@ -400,81 +400,10 @@ FormaPro est une agence spécialisée dans la formation en **Marketing Digital**
 ### Schéma des entités et relations
 
 ```
-┌─────────────────┐         ┌─────────────────┐
-│     USERS       │         │    COMPANIES    │
-├─────────────────┤         ├─────────────────┤
-│ id (UUID) PK    │         │ id (UUID) PK    │
-│ first_name      │         │ name            │
-│ last_name       │         │ city            │
-│ email UNIQUE    │         │ sector          │
-│ password_hash   │         │ size            │
-│ role            │         │ website         │
-│ is_active       │         │ phone           │
-│ phone           │         │ annual_revenue  │
-│ job_title       │         │ type            │
-│ created_at      │         │ life_stage      │
-└────────┬────────┘         │ notes           │
-         │ 1,N              │ created_at      │
-         │                  └────────┬────────┘
-         │                           │ 1,N
-         ▼                           ▼
-┌─────────────────┐        ┌──────────────────┐
-│     TASKS       │        │    CONTACTS      │
-├─────────────────┤        ├──────────────────┤
-│ id (UUID) PK    │◄───────┤ id (UUID) PK     │
-│ title           │  0,N   │ first_name       │
-│ priority        │        │ last_name        │
-│ status          │        │ email            │
-│ due_date        │        │ phone            │
-│ contact_id FK   │        │ job_title        │
-│ lead_id FK      │        │ city             │
-│ assigned_to FK  │        │ linkedin_url     │
-│ created_at      │        │ history (notes)  │
-└─────────────────┘        │ company_id FK    │
-                           │ created_at       │
-                           └────────┬─────────┘
-                                    │ 1,N
-                         ┌──────────┴──────────┐
-                         │                     │
-                   ┌─────▼──────┐      ┌───────▼──────┐
-                   │   LEADS    │      │    DEALS     │
-                   ├────────────┤      ├──────────────┤
-                   │ id PK      │      │ id PK        │
-                   │ title      │      │ title        │
-                   │ status     │      │ amount       │
-                   │ source     │      │ status       │
-                   │ value      │      │ probability  │
-                   │ contact_id │      │ close_date   │
-                   │ company_id │      │ contact_id   │
-                   │ assigned_to│      │ company_id   │
-                   │ created_at │      │ assigned_to  │
-                   └────────────┘      │ notes        │
-                                       │ created_at   │
-                                       └──────────────┘
+>  Généré automatiquement à chaque push via GitHub Actions
 
-┌─────────────────────┐     ┌─────────────────────┐
-│    EMAILS_LOG       │     │   EMAIL_TEMPLATES   │
-├─────────────────────┤     ├─────────────────────┤
-│ id (UUID) PK        │     │ id (UUID) PK        │
-│ to_email            │     │ name                │
-│ subject             │     │ subject             │
-│ type                │     │ body                │
-│ status              │     │ variables (JSON)    │
-│ contact_id FK       │     │ created_by FK       │
-│ user_id FK          │     │ created_at          │
-│ sent_at             │     └─────────────────────┘
-│ opened_at           │
-│ clicked_at          │     ┌─────────────────────┐
-└─────────────────────┘     │  PASSWORD_RESETS    │
-                            ├─────────────────────┤
-                            │ id (UUID) PK        │
-                            │ user_id FK          │
-                            │ code (6 chiffres)   │
-                            │ expires_at          │
-                            │ used                │
-                            └─────────────────────┘
+![Diagramme de classes](doc/diagram_model.png)
 ```
-
 ### Détail des tables principales
 
 #### Table `users`
