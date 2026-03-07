@@ -38,112 +38,7 @@
 
 ## 🗄️ Diagramme de classes
 
-```mermaid
-classDiagram
-
-    class User {
-        +UUID id
-        +String first_name
-        +String last_name
-        +String email
-        +String password_hash
-        +String role
-        +String phone
-        +String job_title
-        +Boolean is_active
-        +DateTime created_at
-        +login()
-        +resetPassword()
-    }
-
-    class PasswordReset {
-        +UUID id
-        +String email
-        +String code
-        +DateTime expires_at
-        +Boolean used
-        +DateTime created_at
-    }
-
-    class Company {
-        +UUID id
-        +String name
-        +String website
-        +String city
-        +String sector
-        +String phone
-        +String size
-        +Float annual_revenue
-        +DateTime created_at
-    }
-
-    class Contact {
-        +UUID id
-        +String first_name
-        +String last_name
-        +String email
-        +String phone
-        +String job_title
-        +String city
-        +String linkedin_url
-        +String history
-        +UUID company_id
-        +DateTime created_at
-    }
-
-    class Lead {
-        +UUID id
-        +String title
-        +String status
-        +String source
-        +Float value_eur
-        +UUID contact_id
-        +UUID assigned_to
-        +DateTime created_at
-        +updateStatus()
-    }
-
-    class Deal {
-        +UUID id
-        +String title
-        +String status
-        +Float amount
-        +UUID contact_id
-        +UUID assigned_to
-        +DateTime created_at
-        +DateTime updated_at
-        +updateStatus()
-    }
-
-    class Task {
-        +UUID id
-        +String title
-        +DateTime due_at
-        +Boolean done
-        +String priority
-        +UUID contact_id
-        +UUID lead_id
-        +UUID assigned_to
-        +DateTime created_at
-        +toggleDone()
-        +togglePriority()
-    }
-
-    User "1" --> "0..*" Lead : assigned_to
-    User "1" --> "0..*" Deal : assigned_to
-    User "1" --> "0..*" Task : assigned_to
-    User "1" --> "0..*" PasswordReset : email
-
-    Company "1" --> "0..*" Contact : emploie
-
-    Contact "0..1" --> "0..*" Lead : génère
-    Contact "0..1" --> "0..*" Deal : lié à
-    Contact "0..1" --> "0..*" Task : lié à
-
-    Lead "0..1" --> "0..*" Task : lié à
-```
-
-> 📌 Le diagramme PNG ci-dessous est généré automatiquement à chaque push via GitHub Actions :
+> 📌 Généré automatiquement à chaque push via GitHub Actions
 
 ![Diagramme de classes](doc/diagram_model.png)
 
@@ -292,6 +187,11 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 │       ├── pipeline/page.tsx
 │       ├── tasks/page.tsx
 │       └── users/page.tsx
+├── doc/
+│   └── diagram_model.png   # Généré automatiquement
+├── .github/
+│   └── workflows/
+│       └── generate-uml.yml
 └── docker-compose.yml
 ```
 

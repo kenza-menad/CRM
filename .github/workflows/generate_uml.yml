@@ -7,29 +7,139 @@ on:
 jobs:
   generate-uml:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Java & Graphviz
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y default-jre graphviz
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
 
-      - name: Download PlantUML jar
-        run: |
-          wget -q https://github.com/plantuml/plantuml/releases/download/v1.2024.3/plantuml-1.2024.3.jar -O /tmp/plantuml.jar
+      - name: Install Mermaid CLI
+        run: npm install -g @mermaid-js/mermaid-cli
 
-      - name: Generate PNG from PUML
+      - name: Create doc folder if missing
+        run: mkdir -p doc
+
+      - name: Write Mermaid diagram to file
         run: |
-          java -jar /tmp/plantuml.jar -tpng doc/diagram_model.puml -o ../doc/
+          cat > /tmp/diagram.mmd << 'EOF'
+          classDiagram
+
+              class User {
+                  +UUID id
+                  +String first_name
+                  +String last_name
+                  +String email
+                  +String password_hash
+                  +String role
+                  +String phone
+                  +String job_title
+                  +Boolean is_active
+                  +DateTime created_at
+                  +login()
+                  +resetPassword()
+              }
+
+              class PasswordReset {
+                  +UUID id
+                  +String email
+                  +String code
+                  +DateTime expires_at
+                  +Boolean used
+                  +DateTime created_at
+              }
+
+              class Company {
+                  +UUID id
+                  +String name
+                  +String website
+                  +String city
+                  +String sector
+                  +String phone
+                  +String size
+                  +Float annual_revenue
+                  +DateTime created_at
+              }
+
+              class Contact {
+                  +UUID id
+                  +String first_name
+                  +String last_name
+                  +String email
+                  +String phone
+                  +String job_title
+                  +String city
+                  +String linkedin_url
+                  +String history
+                  +UUID company_id
+                  +DateTime created_at
+              }
+
+              class Lead {
+                  +UUID id
+                  +String title
+                  +String status
+                  +String source
+                  +Float value_eur
+                  +UUID contact_id
+                  +UUID assigned_to
+                  +DateTime created_at
+                  +updateStatus()
+              }
+
+              class Deal {
+                  +UUID id
+                  +String title
+                  +String status
+                  +Float amount
+                  +UUID contact_id
+                  +UUID assigned_to
+                  +DateTime created_at
+                  +DateTime updated_at
+                  +updateStatus()
+              }
+
+              class Task {
+                  +UUID id
+                  +String title
+                  +DateTime due_at
+                  +Boolean done
+                  +String priority
+                  +UUID contact_id
+                  +UUID lead_id
+                  +UUID assigned_to
+                  +DateTime created_at
+                  +toggleDone()
+                  +togglePriority()
+              }
+
+              User "1" --> "0..*" Lead : assigned_to
+              User "1" --> "0..*" Deal : assigned_to
+              User "1" --> "0..*" Task : assigned_to
+              User "1" --> "0..*" PasswordReset : email
+
+              Company "1" --> "0..*" Contact : emploie
+
+              Contact "0..1" --> "0..*" Lead : génère
+              Contact "0..1" --> "0..*" Deal : lié à
+              Contact "0..1" --> "0..*" Task : lié à
+
+              Lead "0..1" --> "0..*" Task : lié à
+          EOF
+
+      - name: Generate PNG from Mermaid
+        run: |
+          mmdc -i /tmp/diagram.mmd -o doc/diagram_model.png -t neutral -b white --width 1200
 
       - name: Commit and push diagram
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add doc/
+          git add doc/diagram_model.png
           git diff --cached --quiet || git commit -m "docs: Update UML diagram automatically"
           git push
