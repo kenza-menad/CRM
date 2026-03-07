@@ -245,32 +245,16 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 
 ---
 
-## 🎯 Présentation du projet
+##  Présentation du projet
 
 ### Contexte
 
 FormaPro est une agence spécialisée dans la formation en **Marketing Digital**. Elle propose des formations sur des thématiques telles que le SEO, Google Ads, les réseaux sociaux, l'analytics et la stratégie digitale.
 
-Avant ce projet, la gestion des clients reposait sur des fichiers Excel dispersés, des emails non centralisés et des rappels manuels. Les opportunités commerciales étaient mal suivies, les relances oubliées, et aucune donnée analytique n'était disponible.
-
-### Problématique
-
-> Comment centraliser et automatiser la gestion de la relation client d'une agence de formation pour améliorer le suivi commercial, la communication et la prise de décision ?
-
-### Solution apportée
-
-Un CRM web complet, moderne et hébergé dans le cloud permettant de :
-
-- 📇 **Centraliser** contacts, entreprises et leads en un seul endroit
-- 📊 **Visualiser** le pipeline de ventes en temps réel (Kanban + Liste)
-- 📧 **Automatiser** les communications via Brevo (9 types d'emails)
-- ✅ **Planifier** les tâches et rappels de l'équipe avec vue calendrier
-- 📈 **Analyser** les performances via un dashboard avec KPI et graphiques
-- 👥 **Gérer** les accès et rôles de l'équipe commerciale
 
 ---
 
-## 📌 Analyse des besoins
+##  Analyse des besoins
 
 ### 1.1 Acteurs du système
 
@@ -314,7 +298,7 @@ Un CRM web complet, moderne et hébergé dans le cloud permettant de :
 
 ---
 
-## 🛠 Stack technique
+##  Stack technique
 
 ### Frontend
 
@@ -346,7 +330,7 @@ Un CRM web complet, moderne et hébergé dans le cloud permettant de :
 
 ---
 
-## 🏗 Architecture
+##  Architecture
 
 ### Vue globale
 
@@ -411,7 +395,7 @@ Un CRM web complet, moderne et hébergé dans le cloud permettant de :
 
 ---
 
-## 🗄 Base de données — MCD Merise
+##  Base de données — MCD Merise
 
 ### Schéma des entités et relations
 
@@ -573,7 +557,7 @@ Un CRM web complet, moderne et hébergé dans le cloud permettant de :
 
 ---
 
-## 🔷 Diagramme Use Case — UML
+##  Diagramme Use Case — UML
 
 ### Acteurs
 
@@ -651,9 +635,9 @@ Système Brevo  ──── Acteur externe, envoi d'emails
 
 ---
 
-## ✅ Fonctionnalités détaillées
+##  Fonctionnalités détaillées
 
-### 🔐 Authentification
+###  Authentification
 
 - Connexion avec email + mot de passe → retourne un JWT stocké en localStorage
 - Inscription avec envoi automatique d'un **email de bienvenue** via Brevo
@@ -664,13 +648,13 @@ Système Brevo  ──── Acteur externe, envoi d'emails
 - Middleware `requireAuth` sur toutes les routes protégées
 - Middleware `requireAdmin` pour les actions administratives sensibles
 
-### 📊 Dashboard analytique
+###  Dashboard analytique
 
 **KPI principaux filtrables par période :**
-- 💰 CA encaissé avec évolution vs période précédente
-- 📊 Taux de conversion leads → deals gagnés
-- 🎯 Nouveaux prospects sur la période
-- ⚠️ Tâches en retard à traiter en priorité
+-  CA encaissé avec évolution vs période précédente
+-  Taux de conversion leads → deals gagnés
+-  Nouveaux prospects sur la période
+-  Tâches en retard à traiter en priorité
 
 **Filtres de période :** Aujourd'hui / 7 jours / 30 jours / Ce mois / Cette année / Personnalisé
 
@@ -684,7 +668,7 @@ Système Brevo  ──── Acteur externe, envoi d'emails
 - Mon activité personnelle (mes deals, leads, tâches)
 - Performance emailing (taux de succès, répartition par type)
 
-### 📇 Contacts
+###  Contacts
 
 - Recherche full-text (nom, email, ville, téléphone)
 - Filtrage par entreprise, tri par colonne
@@ -696,7 +680,7 @@ Système Brevo  ──── Acteur externe, envoi d'emails
 - Notes internes horodatées
 - Abonnements aux communications (Newsletter, Promotions, Rappels)
 
-### 🏢 Entreprises
+###  Entreprises
 
 - Recherche par nom, filtrage par secteur d'activité
 - Export CSV de la liste complète
@@ -704,28 +688,28 @@ Système Brevo  ──── Acteur externe, envoi d'emails
 - Phase de vie : Prospect / Client / Partenaire / Inactif
 - Contacts associés + toutes les transactions
 
-### 🎯 Leads
+###  Leads
 
 - **Vue Kanban** : 4 colonnes (Nouveau / En cours / Converti / Perdu) avec montant par colonne
 - **Vue Liste** : tableau avec filtres statut et commercial
 - Sources trackées : Facebook / LinkedIn / Site web / Référence / Téléphone
 - Changement de statut via dropdown inline ou drag & drop
 
-### 📈 Pipeline de ventes
+###  Pipeline de ventes
 
 - **Vue Kanban** : 6 étapes avec montant total par colonne et barre de progression par deal
 - **Vue Liste** : tableau avec probabilité, commercial assigné, date de clôture
 - Filtrage par étape
 - KPI en en-tête : pipeline actif, deals gagnés, total deals
 
-### ✅ Tâches
+###  Tâches
 
 - **Vue Liste** : statut, priorité, titre, échéance, contact/lead associé
 - **Vue Calendrier** : calendrier mensuel avec tâches positionnées
 - Filtres rapides : En retard / Urgent
 - KPI : À faire, Terminées, En retard, Urgentes, Total
 
-### 📧 Emails & Templates
+###  Emails & Templates
 
 - Historique de tous les emails avec filtres par type
 - KPI : Total envoyés, 30 derniers jours, Destinataires uniques, Échecs
@@ -734,7 +718,7 @@ Système Brevo  ──── Acteur externe, envoi d'emails
 
 ---
 
-## 📈 Pipeline de ventes & Workflow
+##  Pipeline de ventes & Workflow
 
 ### Étapes du pipeline FormaPro
 
@@ -778,21 +762,21 @@ Système Brevo  ──── Acteur externe, envoi d'emails
 
 ---
 
-## 📧 Emails automatiques Brevo
+##  Emails automatiques Brevo
 
 9 types d'emails automatiques déclenchés par des événements CRM :
 
 | # | Type | Déclencheur | Destinataire |
 |---|------|-------------|--------------|
-| 1 | 🎉 **Bienvenue** | Création d'un nouveau compte | Nouvel utilisateur |
-| 2 | 🏆 **Deal gagné** | Deal passé au statut "Gagné" | Commercial responsable |
-| 3 | 🎯 **Nouveau lead** | Lead assigné à un commercial | Commercial assigné |
-| 4 | ✅ **Lead converti** | Statut lead passé à "Converti" | Commercial responsable |
-| 5 | ⚠️ **Tâche en retard** | Tâche non complétée après échéance | Utilisateur assigné |
-| 6 | 📋 **Tâche assignée** | Nouvelle tâche assignée | Utilisateur assigné |
-| 7 | 🔑 **Reset mot de passe** | Demande de réinitialisation | Utilisateur demandeur |
-| 8 | 👤 **Rôle modifié** | Changement de rôle par l'admin | Utilisateur concerné |
-| 9 | 🔔 **Statut compte** | Activation ou désactivation | Utilisateur concerné |
+| 1 |  **Bienvenue** | Création d'un nouveau compte | Nouvel utilisateur |
+| 2 |  **Deal gagné** | Deal passé au statut "Gagné" | Commercial responsable |
+| 3 |  **Nouveau lead** | Lead assigné à un commercial | Commercial assigné |
+| 4 |  **Lead converti** | Statut lead passé à "Converti" | Commercial responsable |
+| 5 |  **Tâche en retard** | Tâche non complétée après échéance | Utilisateur assigné |
+| 6 |  **Tâche assignée** | Nouvelle tâche assignée | Utilisateur assigné |
+| 7 |  **Reset mot de passe** | Demande de réinitialisation | Utilisateur demandeur |
+| 8 |  **Rôle modifié** | Changement de rôle par l'admin | Utilisateur concerné |
+| 9 |  **Statut compte** | Activation ou désactivation | Utilisateur concerné |
 
 ### Implémentation technique
 
@@ -818,7 +802,7 @@ async function sendEmail({ to, subject, htmlContent, type, contactId, userId }) 
 
 ---
 
-## 🚀 Installation locale
+##  Installation locale
 
 ### Prérequis
 
@@ -855,25 +839,25 @@ docker compose ps
 
 ---
 
-## 🌐 Déploiement CI/CD
+##  Déploiement CI/CD
 
 ```
-💻 Développement local (Docker)
+ Développement local (Docker)
         │
         │ git push
         ▼
-📦 GitHub (dépôt distant)
+ GitHub (dépôt distant)
         │
         │ Push sur branche main
         ▼
-🔄 Vercel détecte le push (webhook GitHub)
+ Vercel détecte le push (webhook GitHub)
         │
         │ Build automatique Next.js + Node.js
         ▼
-✅ Déploiement en production automatique
+ Déploiement en production automatique
         │
         ▼
-🌍 Application disponible en ligne
+ Application disponible en ligne
 ```
 
 ### Infrastructure cloud
@@ -887,7 +871,7 @@ docker compose ps
 
 ---
 
-## 🔑 Variables d'environnement
+##  Variables d'environnement
 
 Créer un fichier `.env` à la racine du projet :
 
@@ -909,12 +893,12 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 ---
 
-## 📁 Structure du projet
+##  Structure du projet
 
 ```
 formaprocrm/
 │
-├── 📁 frontend/                      # Application Next.js
+├──  frontend/                      # Application Next.js
 │   ├── app/
 │   │   ├── dashboard/page.tsx        # Dashboard analytique
 │   │   ├── contacts/
@@ -936,7 +920,7 @@ formaprocrm/
 │   │   └── forgot-password/page.tsx  # Reset mot de passe
 │   └── components/                   # Composants réutilisables
 │
-├── 📁 backend/                       # API Node.js + Express
+├──  backend/                       # API Node.js + Express
 │   ├── server.js                     # Point d'entrée
 │   ├── routes/
 │   │   ├── auth.js                   # Authentification
@@ -958,7 +942,7 @@ formaprocrm/
 
 ---
 
-## 🔒 Sécurité
+##  Sécurité
 
 | Mesure | Implémentation | Détail |
 |--------|----------------|--------|
@@ -971,44 +955,6 @@ formaprocrm/
 | **CORS** | Configuré Express | Origines autorisées uniquement |
 
 ---
-
-## 📊 Bilan du projet
-
-### Fonctionnalités livrées
-
-| Module | Statut | Détails |
-|--------|--------|---------|
-| 🔐 Authentification complète | ✅ Complet | Login, signup, reset password, JWT, bcrypt |
-| 📊 Dashboard analytique | ✅ Complet | KPI, graphiques, filtres période, funnel |
-| 📇 Gestion des contacts | ✅ Complet | CRUD, fiches détaillées, recherche, emails |
-| 🏢 Gestion des entreprises | ✅ Complet | CRUD, export CSV, résumé financier |
-| 🎯 Gestion des leads | ✅ Complet | Kanban + Liste, sources, assignation |
-| 📈 Pipeline de ventes | ✅ Complet | Kanban + Liste, probabilités, filtres |
-| ✅ Gestion des tâches | ✅ Complet | Liste + Calendrier, priorités, urgences |
-| 📧 Emails automatiques (9 types) | ✅ Complet | Brevo API, log en base de données |
-| ✉️ Envoi email manuel | ✅ Complet | Modal depuis fiche contact |
-| 📝 Templates d'emails | ✅ Complet | CRUD, variables dynamiques |
-| 📋 Historique communications | ✅ Complet | Page admin + panel fiche contact |
-| 👥 Gestion des utilisateurs | ✅ Complet | Rôles, activation/désactivation |
-| ⚙️ Paramètres & Mon profil | ✅ Complet | Modification informations personnelles |
-| 🌐 Déploiement CI/CD | ✅ Complet | GitHub → Vercel automatique |
-| 🐳 Docker (bonus) | ✅ Complet | Environnement local reproductible |
-
-### Compétences développées
-
-- Conception et déploiement d'une application **Full Stack SaaS** complète
-- Intégration de **services cloud** (Neon, Brevo, Vercel)
-- Développement **frontend moderne** avec Next.js 14, React, TypeScript, Tailwind CSS
-- Développement **API REST** avec Node.js et Express
-- Gestion d'une **base de données PostgreSQL** relationnelle en cloud
-- Mise en place d'une **authentification JWT** sécurisée avec gestion des rôles
-- **Automatisation d'emails** transactionnels via API externe (Brevo)
-- Mise en place d'un pipeline **CI/CD** avec GitHub et Vercel
-- **Containerisation** avec Docker pour le développement local
-- Gestion de versions avec **Git** et travail en branches
-
----
-
 <div align="center">
 
 **FormaPro CRM — Projet de développement web Full Stack — Mars 2026**
