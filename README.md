@@ -9,7 +9,7 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker)
 
 
- Application en ligne : https://crm-orpin-six-19.vercel.app**
+ Application en ligne : https://crm-orpin-six-19.vercel.app
 
 ## 📋 Stack technique
 
